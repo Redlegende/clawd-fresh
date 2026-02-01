@@ -1,0 +1,43 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.1.24-3",
+    "lastTouchedAt": "2026-02-01T12:00:00.000Z"
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "moonshot/kimi-k2.5",
+        "fallbacks": [
+          "moonshot/kimi-k2-0905-preview"
+        ]
+      },
+      "workspace": "/Users/jakobbakken/clawd-fresh",
+      "compaction": {
+        "mode": "safeguard"
+      },
+      "maxConcurrent": 4,
+      "subagents": {
+        "maxConcurrent": 8,
+        "model": "moonshot/kimi-k2.5",
+        "archiveAfterMinutes": 30
+      }
+    }
+  },
+  "gateway": {
+    "port": 18790,
+    "mode": "local",
+    "bind": "loopback",
+    "auth": {
+      "mode": "token",
+      "token": "fresh-instance-token-change-me"
+    }
+  },
+  "tools": {
+    "web": {
+      "search": {
+        "provider": "brave",
+        "apiKey": "BSAQRzfq4-2SgoRtoRUreBEHzD4wPEI"
+      }
+    }
+  }
+}

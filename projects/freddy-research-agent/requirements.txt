@@ -1,0 +1,31 @@
+# Core dependencies for Freddy Research Agent - Moonshot Only
+# Install with: pip install -r requirements.txt
+
+# Web scraping (free)
+crawl4ai>=0.4.0
+playwright>=1.40.0
+
+# Moonshot API (OpenAI-compatible)
+openai>=1.0.0
+
+# Search provider
+# Brave Search - free tier: 2,000 queries/month
+# Get API key: https://api.search.brave.com/
+
+# HTTP client
+aiohttp>=3.9.0
+
+# Data validation
+pydantic>=2.0.0
+
+# Environment management
+python-dotenv>=1.0.0
+
+# CLI output formatting
+rich>=13.0.0
+
+# Logging
+loguru>=0.7.0
+
+# Optional: Alternative search providers (backup)
+# tavily-python>=0.3.0  # https://tavily.com/
