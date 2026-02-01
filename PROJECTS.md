@@ -105,6 +105,31 @@ Personal kanban + health tracking + goals + Second Brain
 
 ---
 
+## 🥗 PERSONAL PROJECTS
+
+### Gut Health Lab
+**Status:** ✅ Active Research  
+**Location:** `projects/gut-health-lab/`
+
+Personal gut healing protocol based on Dr. William Davis's work.
+
+**Research Completed:**
+| Topic | File |
+|-------|------|
+| Super Gut Diet | `research/01-super-gut-diet.md` |
+| Wheat Belly | `research/02-wheat-belly.md` |
+| L. reuteri + SIBO | `research/03-l-reuteri-sibo.md` |
+| Yogurt Strains | `research/04-yogurt-strains.md` |
+| **Lentils & Chickpeas** | `research/05-lentils-chickpeas-gut-health.md` ✅ |
+
+**Current Protocol:**
+- Knut bread (green banana flour)
+- Beef stock daily
+- L. reuteri yogurt (36h fermentation)
+- Lentils/chickpeas: 1/4–1/2 cup, canned + rinsed
+
+---
+
 ## 🔬 RESEARCH PROJECTS
 
 ### 3dje Boligsektor Data Sources
@@ -153,6 +178,7 @@ Research on AI tools for business operations
 | 3dje Boligsektor | 🔴 Planning | Schedule with Henrik | **HIGH** |
 | Hour Tracking | ✅ Working | Install PDF tools (poppler) | Medium |
 | YouTube | 🔵 Planning | Choose first video topic | Medium |
+| Gut Health Lab | ✅ Active | Continue protocol | — |
 | Research Agent | ✅ Working | Use as needed | — |
 | Everything Dashboard | 🏗️ Building | Continue development | Low |
 

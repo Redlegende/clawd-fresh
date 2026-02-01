@@ -185,6 +185,30 @@ research/                  ← General research only
 
 ---
 
+## 🥗 Gut Health Protocol
+
+Jakob's personal gut healing system based on Dr. William Davis's research.
+
+### Current Protocol:
+- **Knut Bread** — Homemade gut-friendly bread (green banana flour base)
+- **Beef Stock** — Daily morning consumption
+- **L. reuteri Yogurt** — 36-hour fermented, SIBO protocol
+
+### Research Archive:
+| Topic | Location |
+|-------|----------|
+| L. reuteri + SIBO | `projects/gut-health-lab/research/03-l-reuteri-sibo.md` |
+| Yogurt Strains | `projects/gut-health-lab/research/04-yogurt-strains.md` |
+| **Lentils & Chickpeas** | `projects/gut-health-lab/research/05-lentils-chickpeas-gut-health.md` ✅ |
+
+### Key Findings:
+- ✅ **Lentils & chickpeas approved** — Rich in GOS prebiotic fiber
+- ⚠️ **SIBO preparation matters** — Use canned/rinsed or soak + strain
+- 🎯 **Portions:** 1/4–1/2 cup cooked per serving
+- 📊 **Dr. Davis target:** 20g prebiotic fiber daily
+
+---
+
 ## 📝 Recent Activity
 
 ### 2026-02-01 — Workspace Migration Complete
