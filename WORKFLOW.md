@@ -53,13 +53,14 @@ AFTER:
 
 ---
 
-### When I Learn Something Important → Update MEMORY.md
+### When I Learn Something Important → Update MEMORY.md + ByteRover
 **Trigger:** New integration, discovered pattern, bug fix, lesson learned
 
 **Action:**
 1. Add to relevant section in MEMORY.md
 2. Include context: what, why, how
 3. If it replaces old info → update/remove old info
+4. **Curate to ByteRover:** `brv curate "Summary" -f source-files`
 
 **Example:**
 ```
@@ -69,6 +70,11 @@ AFTER:
 **Problem:** iGMS OAuth failed with "invalid scope"
 **Solution:** Use `read_bookings` not `bookings_read`
 **Reference:** See `projects/Kvitfjellhytter/oauth-notes.md`
+```
+
+**ByteRover:**
+```bash
+brv curate "iGMS OAuth uses read_bookings scope not bookings_read" -f oauth-notes.md
 ```
 
 ---
@@ -98,12 +104,16 @@ AFTER:
    - PROJECTS.md — update project statuses
    - MEMORY.md — any lessons learned
 
-3. **Create daily note** in `memory/YYYY-MM-DD.md`:
+3. **Curate to ByteRover** (if brv is running):
+   - `brv curate "Key decisions/learnings" -f relevant-files`
+   - `printf 'y\n' | brv push` (if significant changes)
+
+4. **Create daily note** in `memory/YYYY-MM-DD.md`:
    - Raw log of session
    - Links to files changed
    - Context for future me
 
-4. **State what's next:**
+5. **State what's next:**
    - Next task from TODO.md 🔴 NOW
    - Any blockers or dependencies
 
@@ -181,6 +191,7 @@ After every session or significant work:
 - [ ] **TODO.md** — tasks moved, new tasks added
 - [ ] **PROJECTS.md** — statuses updated, next-actions current
 - [ ] **MEMORY.md** — lessons, new integrations, important context
+- [ ] **ByteRover** — curate key learnings (`brv curate ...`)
 - [ ] **Daily note** (`memory/YYYY-MM-DD.md`) — session log
 - [ ] **SOUL.md** — if my identity/role changed
 - [ ] **USER.md** — if your preferences/situation changed
