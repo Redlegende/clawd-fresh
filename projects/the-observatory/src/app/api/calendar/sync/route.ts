@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
   try {
     // Get calendar connection
     const { data: connection, error: connError } = await supabase
-      .from('orchestrator.calendars')
+      .from('calendars')
       .select('*')
       .eq('user_id', 'b4004bf7-9b69-47e5-8032-c0f39c654a61')
       .eq('provider', 'google')
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       oauth2Client.setCredentials(credentials);
 
       // Update tokens in database
-      await supabase.from('orchestrator.calendars').update({
+      await supabase.from('calendars').update({
         access_token: credentials.access_token,
         expires_at: credentials.expiry_date ? new Date(credentials.expiry_date).toISOString() : null,
         updated_at: new Date().toISOString(),
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
       });
 
       for (const event of events.items || []) {
-        const { error: upsertError } = await supabase.from('orchestrator.events').upsert({
+        const { error: upsertError } = await supabase.from('events').upsert({
           user_id: 'b4004bf7-9b69-47e5-8032-c0f39c654a61',
           calendar_id: cal.id,
           external_event_id: event.id,
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Update last_sync_at
-    await supabase.from('orchestrator.calendars').update({
+    await supabase.from('calendars').update({
       last_sync_at: new Date().toISOString(),
     }).eq('id', connection.id);
 

@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
 
     // Find the calendar connection by channel ID
     const { data: calendar, error: calError } = await supabase
-      .from('orchestrator.calendars')
+      .from('calendars')
       .select('*')
       .eq('webhook_channel_id', channelId)
       .single();
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
 
     // Update sync timestamp
     await supabase
-      .from('orchestrator.calendars')
+      .from('calendars')
       .update({ 
         last_sync_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
@@ -111,7 +111,7 @@ async function syncCalendarEvents(calendar: any) {
     const { credentials } = await oauth2Client.refreshAccessToken();
     oauth2Client.setCredentials(credentials);
 
-    await supabase.from('orchestrator.calendars').update({
+    await supabase.from('calendars').update({
       access_token: credentials.access_token,
       expires_at: credentials.expiry_date ? new Date(credentials.expiry_date).toISOString() : null,
     }).eq('id', calendar.id);
@@ -147,12 +147,12 @@ async function syncCalendarEvents(calendar: any) {
         if (event.status === 'cancelled') {
           // Delete cancelled events
           await supabase
-            .from('orchestrator.events')
+            .from('events')
             .delete()
             .eq('external_event_id', event.id);
         } else {
           // Upsert event
-          await supabase.from('orchestrator.events').upsert({
+          await supabase.from('events').upsert({
             user_id: calendar.user_id,
             calendar_id: cal.id,
             external_event_id: event.id,
@@ -177,7 +177,7 @@ async function syncCalendarEvents(calendar: any) {
       // Save sync token for next delta sync
       if (nextSyncToken) {
         await supabase
-          .from('orchestrator.calendars')
+          .from('calendars')
           .update({ sync_token: nextSyncToken })
           .eq('id', calendar.id);
       }
@@ -187,7 +187,7 @@ async function syncCalendarEvents(calendar: any) {
       if (error.code === 410) {
         console.log('Sync token expired, performing full sync');
         await supabase
-          .from('orchestrator.calendars')
+          .from('calendars')
           .update({ sync_token: null })
           .eq('id', calendar.id);
         
@@ -201,7 +201,7 @@ async function syncCalendarEvents(calendar: any) {
         });
 
         for (const event of events.items || []) {
-          await supabase.from('orchestrator.events').upsert({
+          await supabase.from('events').upsert({
             user_id: calendar.user_id,
             calendar_id: cal.id,
             external_event_id: event.id,

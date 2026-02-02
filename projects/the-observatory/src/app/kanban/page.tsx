@@ -108,8 +108,8 @@ export default function KanbanPage() {
         { data: taskData, error: tasksError },
         { data: projectData, error: projectsError }
       ] = await Promise.all([
-        supabase.from('orchestrator.tasks').select('*').order('created_at', { ascending: false }),
-        supabase.from('orchestrator.projects').select('id, name')
+        supabase.from('tasks').select('*').order('created_at', { ascending: false }),
+        supabase.from('projects').select('id, name')
       ])
 
       if (tasksError) console.error('Tasks error:', tasksError)

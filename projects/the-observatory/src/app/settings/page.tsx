@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
+import { Calendar, RefreshCw, CheckCircle, AlertCircle, Link2, Unlink, Bell } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -17,32 +17,54 @@ interface CalendarConnection {
   provider: string;
   email: string;
   sync_enabled: boolean;
-  last_sync_at: string | null;
+  last_synced_at: string | null;
+  webhook_expiration: string | null;
   scopes: string[];
   calendars: { id: string; summary: string; primary: boolean }[];
 }
 
+interface WebhookStatus {
+  connected: boolean;
+  webhook_active: boolean;
+  webhook_expires_at: string | null;
+  sync_enabled: boolean;
+  last_sync_at: string | null;
+}
+
 export default function SettingsPage() {
   const [connection, setConnection] = useState<CalendarConnection | null>(null);
+  const [webhookStatus, setWebhookStatus] = useState<WebhookStatus | null>(null);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     fetchConnection();
+    fetchWebhookStatus();
     
     // Check for query params
     const params = new URLSearchParams(window.location.search);
     if (params.get('success') === 'calendar_connected') {
       setMessage({ type: 'success', text: 'Calendar connected successfully!' });
+      // Clear params
+      window.history.replaceState({}, '', window.location.pathname);
     } else if (params.get('error')) {
-      setMessage({ type: 'error', text: 'Failed to connect calendar. Please try again.' });
+      const error = params.get('error');
+      const errorMessages: Record<string, string> = {
+        'oauth_denied': 'Access denied. You can reconnect anytime.',
+        'no_code': 'Authentication failed. Please try again.',
+        'db_error': 'Failed to save calendar. Please try again.',
+        'oauth_failed': 'Google authentication failed. Please try again.',
+      };
+      setMessage({ type: 'error', text: errorMessages[error!] || 'Something went wrong.' });
+      window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);
 
   async function fetchConnection() {
     try {
       const { data, error } = await supabase
-        .from('orchestrator.calendars')
+        .from('calendars')
         .select('*')
         .eq('user_id', 'b4004bf7-9b69-47e5-8032-c0f39c654a61')
         .eq('provider', 'google')
@@ -60,6 +82,18 @@ export default function SettingsPage() {
     }
   }
 
+  async function fetchWebhookStatus() {
+    try {
+      const response = await fetch('/api/calendar/webhook/setup');
+      if (response.ok) {
+        const data = await response.json();
+        setWebhookStatus(data);
+      }
+    } catch (error) {
+      console.error('Error fetching webhook status:', error);
+    }
+  }
+
   async function handleConnect() {
     window.location.href = '/api/auth/google';
   }
@@ -68,8 +102,12 @@ export default function SettingsPage() {
     if (!confirm('Are you sure you want to disconnect your calendar?')) return;
 
     try {
+      // Stop webhook first
+      await fetch('/api/calendar/webhook/setup', { method: 'DELETE' });
+
+      // Delete connection
       const { error } = await supabase
-        .from('orchestrator.calendars')
+        .from('calendars')
         .delete()
         .eq('user_id', 'b4004bf7-9b69-47e5-8032-c0f39c654a61')
         .eq('provider', 'google');
@@ -77,6 +115,7 @@ export default function SettingsPage() {
       if (error) throw error;
 
       setConnection(null);
+      setWebhookStatus(null);
       setMessage({ type: 'success', text: 'Calendar disconnected.' });
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to disconnect calendar.' });
@@ -84,21 +123,52 @@ export default function SettingsPage() {
   }
 
   async function handleSync() {
-    setLoading(true);
+    setSyncing(true);
     try {
-      const response = await fetch('/api/calendar/sync', { method: 'POST' });
+      const response = await fetch('/api/calendar/sync-all', { method: 'POST' });
       if (response.ok) {
-        setMessage({ type: 'success', text: 'Calendar synced!' });
+        const data = await response.json();
+        setMessage({ 
+          type: 'success', 
+          text: `Synced ${data.total_events_synced} events from ${data.calendars_successful} calendars!` 
+        });
         fetchConnection();
       } else {
-        setMessage({ type: 'error', text: 'Sync failed.' });
+        const error = await response.json();
+        setMessage({ type: 'error', text: error.error || 'Sync failed.' });
       }
     } catch (error) {
       setMessage({ type: 'error', text: 'Sync failed.' });
     } finally {
-      setLoading(false);
+      setSyncing(false);
     }
   }
+
+  async function handleSetupWebhook() {
+    setSyncing(true);
+    try {
+      const response = await fetch('/api/calendar/webhook/setup', { method: 'POST' });
+      if (response.ok) {
+        const data = await response.json();
+        setMessage({ 
+          type: 'success', 
+          text: `Real-time sync enabled! Expires ${new Date(data.expiration).toLocaleDateString()}` 
+        });
+        fetchWebhookStatus();
+      } else {
+        const error = await response.json();
+        setMessage({ type: 'error', text: error.error || 'Webhook setup failed.' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Webhook setup failed.' });
+    } finally {
+      setSyncing(false);
+    }
+  }
+
+  const isWebhookExpired = webhookStatus?.webhook_expires_at 
+    ? new Date(webhookStatus.webhook_expires_at) < new Date()
+    : true;
 
   if (loading) {
     return (
@@ -143,17 +213,35 @@ export default function SettingsPage() {
           {connection ? (
             <>
               <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <div>
-                  <p className="font-medium">{connection.email}</p>
-                  <p className="text-sm text-gray-500">
-                    Last synced: {connection.last_sync_at
-                      ? new Date(connection.last_sync_at).toLocaleString()
-                      : 'Never'}
-                  </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                    <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                      {connection.email?.[0]?.toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-medium">{connection.email}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Last synced: {connection.last_synced_at
+                        ? new Date(connection.last_synced_at).toLocaleString()
+                        : 'Never'}
+                    </p>
+                  </div>
                 </div>
                 <Badge variant={connection.sync_enabled ? 'default' : 'secondary'}>
                   {connection.sync_enabled ? 'Connected' : 'Paused'}
                 </Badge>
+              </div>
+
+              {/* Webhook Status */}
+              <div className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <Bell className={`w-4 h-4 ${webhookStatus?.webhook_active && !isWebhookExpired ? 'text-green-500' : 'text-gray-400'}`} />
+                <span className="text-sm">
+                  {webhookStatus?.webhook_active && !isWebhookExpired 
+                    ? `Real-time sync active (expires ${new Date(webhookStatus.webhook_expires_at!).toLocaleDateString()})`
+                    : 'Real-time sync inactive'
+                  }
+                </span>
               </div>
 
               {connection.calendars && connection.calendars.length > 0 && (
@@ -164,7 +252,7 @@ export default function SettingsPage() {
                       <Badge key={cal.id} variant="outline">
                         {cal.summary}
                         {cal.primary && (
-                          <span className="ml-1 text-cyan-500">(primary)</span>
+                          <span className="ml-1 text-cyan-500">★</span>
                         )}
                       </Badge>
                     ))}
@@ -172,12 +260,21 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              <div className="flex gap-2">
-                <Button onClick={handleSync} disabled={loading} variant="outline">
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Sync Now
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={handleSync} disabled={syncing} variant="outline">
+                  <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
+                  {syncing ? 'Syncing...' : 'Sync Now'}
                 </Button>
+                
+                {(!webhookStatus?.webhook_active || isWebhookExpired) && (
+                  <Button onClick={handleSetupWebhook} disabled={syncing} variant="outline">
+                    <Bell className="w-4 h-4 mr-2" />
+                    Enable Real-time Sync
+                  </Button>
+                )}
+                
                 <Button onClick={handleDisconnect} variant="destructive">
+                  <Unlink className="w-4 h-4 mr-2" />
                   Disconnect
                 </Button>
               </div>
@@ -189,6 +286,7 @@ export default function SettingsPage() {
                 No calendar connected. Connect your Google Calendar to get started.
               </p>
               <Button onClick={handleConnect} size="lg">
+                <Link2 className="w-4 h-4 mr-2" />
                 Connect Google Calendar
               </Button>
             </div>

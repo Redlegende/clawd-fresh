@@ -60,7 +60,7 @@ export default function DailyView() {
 
       // Fetch scheduled tasks
       const { data: taskData, error: taskError } = await supabase
-        .from('orchestrator.tasks')
+        .from('tasks')
         .select(`
           *,
           projects:project_id (name)
@@ -75,7 +75,7 @@ export default function DailyView() {
 
       // Fetch calendar events
       const { data: eventData, error: eventError } = await supabase
-        .from('orchestrator.events')
+        .from('events')
         .select('*')
         .eq('user_id', 'b4004bf7-9b69-47e5-8032-c0f39c654a61')
         .gte('start_time', startOfDay)

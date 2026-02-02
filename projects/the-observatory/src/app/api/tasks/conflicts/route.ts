@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
 
     // Get task details
     const { data: task, error: taskError } = await supabase
-      .from('orchestrator.tasks')
+      .from('tasks')
       .select('*, task_dependencies!task_dependencies_task_id_fkey(depends_on_task_id)')
       .eq('id', taskId)
       .single();
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 
     // 1. Check calendar event conflicts
     const { data: calendarConflicts, error: calError } = await supabase
-      .from('orchestrator.events')
+      .from('events')
       .select('*')
       .eq('user_id', userId)
       .neq('status', 'cancelled')
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
 
     // 2. Check other task conflicts
     const { data: taskConflicts, error: taskConfError } = await supabase
-      .from('orchestrator.tasks')
+      .from('tasks')
       .select('*')
       .eq('user_id', userId)
       .neq('id', taskId)
@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
       const depIds = dependencies.map((d: any) => d.depends_on_task_id);
       
       const { data: depTasks, error: depError } = await supabase
-        .from('orchestrator.tasks')
+        .from('tasks')
         .select('id, title, status, scheduled_end')
         .in('id', depIds);
 

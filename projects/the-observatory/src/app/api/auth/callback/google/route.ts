@@ -10,7 +10,8 @@ const oauth2Client = new google.auth.OAuth2(
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
+  process.env.SUPABASE_SERVICE_KEY!,
+  { db: { schema: 'orchestrator' } }
 );
 
 export async function GET(request: NextRequest) {
@@ -40,28 +41,37 @@ export async function GET(request: NextRequest) {
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
     const { data: calendarList } = await calendar.calendarList.list();
 
-    // Store tokens in database
-    const { error: dbError } = await supabase.from('orchestrator.calendars').upsert({
-      user_id: 'b4004bf7-9b69-47e5-8032-c0f39c654a61', // Jakob's user ID
-      provider: 'google',
-      provider_account_id: userInfo.id,
-      email: userInfo.email,
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
-      expires_at: tokens.expiry_date ? new Date(tokens.expiry_date).toISOString() : null,
-      scopes: tokens.scope?.split(' ') || [],
-      calendars: calendarList.items?.map(cal => ({
-        id: cal.id,
-        summary: cal.summary,
-        primary: cal.primary || false,
-        selected: cal.selected || false,
-      })),
-      sync_enabled: true,
-      last_sync_at: null,
-      updated_at: new Date().toISOString(),
-    }, {
-      onConflict: 'user_id,provider'
-    });
+    // Find primary calendar
+    const primaryCal = calendarList.items?.find(c => c.primary) || calendarList.items?.[0];
+
+    // Store in database using correct schema columns
+    const { error: dbError } = await supabase
+      .from('calendars')
+      .upsert({
+        user_id: 'b4004bf7-9b69-47e5-8032-c0f39c654a61',
+        provider: 'google',
+        provider_account_id: userInfo.id,
+        external_id: primaryCal?.id,
+        name: primaryCal?.summary || 'Google Calendar',
+        email: userInfo.email,
+        color: primaryCal?.backgroundColor || '#4285F4',
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+        expires_at: tokens.expiry_date ? new Date(tokens.expiry_date).toISOString() : null,
+        scopes: tokens.scope?.split(' ') || [],
+        calendars: calendarList.items?.map(cal => ({
+          id: cal.id,
+          summary: cal.summary,
+          primary: cal.primary || false,
+          selected: cal.selected || false,
+        })),
+        sync_enabled: true,
+        is_primary: true,
+        is_active: true,
+        updated_at: new Date().toISOString(),
+      }, {
+        onConflict: 'user_id,provider,external_id'
+      });
 
     if (dbError) {
       console.error('Database error:', dbError);
@@ -69,7 +79,15 @@ export async function GET(request: NextRequest) {
     }
 
     // Trigger initial sync
-    await syncCalendars(tokens.access_token!);
+    await syncInitialEvents(tokens.access_token!, userInfo.id!);
+
+    // Setup webhook for real-time sync
+    try {
+      await setupWebhook(userInfo.id!);
+    } catch (webhookError) {
+      console.error('Webhook setup failed (non-blocking):', webhookError);
+      // Continue - webhook can be set up manually later
+    }
 
     return NextResponse.redirect(new URL('/settings?success=calendar_connected', request.url));
   } catch (error) {
@@ -78,7 +96,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-async function syncCalendars(accessToken: string) {
+async function syncInitialEvents(accessToken: string, userId: string) {
   try {
     const auth = new google.auth.OAuth2();
     auth.setCredentials({ access_token: accessToken });
@@ -97,35 +115,70 @@ async function syncCalendars(accessToken: string) {
       orderBy: 'startTime',
     });
 
-    // Store events in database
+    // Get the calendar ID we just created
+    const { data: calData } = await supabase
+      .from('calendars')
+      .select('id')
+      .eq('user_id', 'b4004bf7-9b69-47e5-8032-c0f39c654a61')
+      .eq('provider', 'google')
+      .single();
+
+    if (!calData) {
+      console.error('Calendar not found after creation');
+      return;
+    }
+
+    // Store events using correct schema
     for (const event of events.items || []) {
-      await supabase.from('orchestrator.events').upsert({
+      await supabase.from('events').upsert({
+        calendar_id: calData.id,
         user_id: 'b4004bf7-9b69-47e5-8032-c0f39c654a61',
-        calendar_id: event.organizer?.email || 'primary',
-        external_event_id: event.id,
-        summary: event.summary,
+        external_id: event.id,
+        title: event.summary || 'Untitled',
         description: event.description,
         location: event.location,
-        start_time: event.start?.dateTime || event.start?.date,
-        end_time: event.end?.dateTime || event.end?.date,
+        starts_at: event.start?.dateTime || event.start?.date,
+        ends_at: event.end?.dateTime || event.end?.date,
+        timezone: event.start?.timeZone || 'Europe/Oslo',
         is_all_day: !event.start?.dateTime,
-        recurrence: event.recurrence,
-        status: event.status,
-        html_link: event.htmlLink,
-        created_at: event.created,
-        updated_at: event.updated,
+        recurrence_rule: event.recurrence?.[0],
+        ical_uid: event.iCalUID,
+        etag: event.etag,
+        status: event.status === 'cancelled' ? 'cancelled' : 'confirmed',
         sync_status: 'synced',
+        updated_at: new Date().toISOString(),
       }, {
-        onConflict: 'external_event_id'
+        onConflict: 'calendar_id,external_id'
       });
     }
 
-    // Update last_sync_at
-    await supabase.from('orchestrator.calendars').update({
-      last_sync_at: new Date().toISOString(),
-    }).eq('user_id', 'b4004bf7-9b69-47e5-8032-c0f39c654a61').eq('provider', 'google');
+    // Update last sync time
+    await supabase.from('calendars').update({
+      last_synced_at: new Date().toISOString(),
+    }).eq('id', calData.id);
+
+    console.log(`Initial sync complete: ${events.items?.length || 0} events`);
 
   } catch (error) {
-    console.error('Calendar sync error:', error);
+    console.error('Initial sync error:', error);
   }
+}
+
+async function setupWebhook(userId: string) {
+  // Call the webhook setup API
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const response = await fetch(`${baseUrl}/api/calendar/webhook/setup`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Webhook setup failed');
+  }
+
+  const result = await response.json();
+  console.log('Webhook setup result:', result);
 }

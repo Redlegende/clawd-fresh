@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     
     // Get task details
     const { data: task, error: taskError } = await supabase
-      .from('orchestrator.tasks')
+      .from('tasks')
       .select('*, task_dependencies!task_dependencies_task_id_fkey(depends_on_task_id)')
       .eq('id', taskId)
       .single();
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     endOfDay.setHours(23, 59, 59, 999);
 
     const { data: events, error: eventsError } = await supabase
-      .from('orchestrator.events')
+      .from('events')
       .select('*')
       .eq('user_id', 'b4004bf7-9b69-47e5-8032-c0f39c654a61')
       .gte('start_time', startOfDay.toISOString())
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
 
     // Get user preferences (working hours, energy patterns)
     const { data: userPrefs } = await supabase
-      .from('orchestrator.users')
+      .from('users')
       .select('working_hours_start, working_hours_end, timezone')
       .eq('id', 'b4004bf7-9b69-47e5-8032-c0f39c654a61')
       .single();
