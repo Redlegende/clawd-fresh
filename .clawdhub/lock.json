@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "skills": {
+    "google-calendar": {
+      "version": "0.1.0",
+      "installedAt": 1769994084626
+    },
+    "clawmail-skill": {
+      "version": "1.0.0",
+      "installedAt": 1769994086159
+    },
+    "google-sheet": {
+      "version": "1.0.0",
+      "installedAt": 1769994087908
+    },
+    "agent-builder": {
+      "version": "1.0.0",
+      "installedAt": 1769994089538
+    },
+    "docstrange": {
+      "version": "1.0.1",
+      "installedAt": 1769994091214
+    }
+  }
+}

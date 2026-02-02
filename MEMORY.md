@@ -28,13 +28,42 @@ Curated memories that persist across sessions. For raw daily logs, see `memory/Y
 
 ### 3dje Boligsektor (HIGH PRIORITY)
 - **Collaboration with Henrik** - Real estate development for social housing
-- **Phase 1:** Clay-based kommune analysis (126 kommuner, 3 fokus)
-- **Phase 2:** Tomte-sourcing system - find developable land/lots
+- **Phase 1:** Clay-based kommune analysis (126 kommuner, 3 fokus) ✅ COMPLETE
+- **Phase 2:** Tomte-sourcing system - find developable land/lots 🏗️ IN PROGRESS
 - **Goal:** Pipeline towards 10,000+ boliger
 - **Key data sources:** SSB, Kartverket, Arealplaner.no, Husbanken
 - **Tech approach:** GIS analysis + grunneier outreach + megler network
-- **API Research:** Complete - see `projects/3dje-boligsektor/research/`
-- **Three approaches defined:** Lean Launch (50-75k), Professional (250-350k), Enterprise (600-800k)
+
+**📁 Research Complete (2026-02-01):**
+- `MASTER-SYNTHESIS.md` — Complete system design & 8-week roadmap
+- `LEAN-ARCHITECTURE.md` — Demo-focused 5000 NOK scope
+- `SOP-MANUAL-VERIFICATION.md` — Quality assurance procedures
+- `MVP-SCOPE-AND-PLAN.md` — 5-day build plan for developer presentation
+- `research/API-KARTVERKET-DEEP-DIVE.md` — Property boundaries ✅, Owner lookup ⚠️ (manual OK)
+- `research/API-SSB-CONTEXT-DEEP-DIVE.md` — Grunnkrets-level context data for scoring
+- `research/API-GEONORGE-PLANS-DEEP-DIVE.md` — Kommuneplan/reguleringsplan differanse algorithm
+- `research/SYSTEM-ARCHITECTURE-DESIGN.md` — Technical architecture & database schema
+
+**🎯 Current Focus (This Week):**
+- **Budget:** 5000 NOK initial development (charging clients)
+- **Model:** Setup fee + monthly retainer
+- **Goal:** Demo + presentation for apartment developers by Friday
+- **Scope:** 2 pilot municipalities, 20-50 lots, manual verification
+- **Not priority:** Automatic owner lookup (manual process OK)
+
+**📋 Build Plan:**
+- Day 1: Setup + pilot selection
+- Day 2: Data fetching (kommuneplan/reguleringsplan)
+- Day 3: Differanse engine
+- Day 4: Scoring + Airtable CRM
+- Day 5: Presentation prep
+
+**📋 Deliverables:**
+- Working differanse algorithm
+- 10+ verified lots with scores
+- Airtable CRM
+- Presentation deck
+- Pricing: 5000 NOK setup + retainer tiers
 
 ---
 
@@ -51,7 +80,7 @@ Curated memories that persist across sessions. For raw daily logs, see `memory/Y
 
 ### Priority 3 - AI Systems
 6. ✅ **Freddy Research Agent** - Moonshot-based deep research, ~$0.05-0.50 per task
-7. ⏳ **Everything Dashboard** - Personal kanban, health tracking, goals
+7. 🏗️ **The Observatory** - Personal command center (Mission Control, Kanban, Fitness Lab, Research Reader) - Autonomous build tonight
 
 ---
 
@@ -65,6 +94,7 @@ Curated memories that persist across sessions. For raw daily logs, see `memory/Y
 | **iGMS** | ✅ Code Ready | OAuth flow implemented, needs connection test |
 | **Vercel** | ✅ Active | Kvitfjellhytter dashboard deployed |
 | **Supabase** | ✅ Active | MCP connected, all storage there |
+| **Project Automation** | ✅ READY | Full stack auto-setup (Supabase + Next.js + Vercel + browser verify) |
 
 ---
 
@@ -221,4 +251,45 @@ Jakob's personal gut healing system based on Dr. William Davis's research.
 
 ---
 
-*Last updated: 2026-02-01 — Migrated from old workspace*
+*Last updated: 2026-02-01 — Migrated from old workspace + Project automation skill created*
+
+---
+
+## 🚀 Project Automation Skill
+
+**Status:** ✅ READY TO USE  
+**Location:** `skills/project-automation/`
+
+### What It Does
+Full automation pipeline: Supabase project → Next.js app → Vercel deploy → Browser verification
+
+### Usage
+```bash
+# One command creates everything:
+source .project-automation.env
+./skills/project-automation/scripts/project-automation.sh observatory-dashboard
+
+# Result:
+# ✅ Supabase project created (eu-north-1)
+# ✅ Next.js + shadcn/ui initialized
+# ✅ Supabase client configured
+# ✅ Vercel linked & deployed
+# ✅ Browser verification run
+```
+
+### What's Automated
+1. **Supabase** — Creates project in `kvitfjellhytter` org, eu-north-1
+2. **Next.js** — shadcn template, Supabase client, env files
+3. **Vercel** — Link, env vars, production deploy
+4. **Verification** — HTTP 200, response time, error checks
+
+### Credentials Stored
+- `.project-automation.env` — Tokens for Supabase & Vercel
+- Supabase org: `qpeaojfvnbwciqttuhzc`
+- Vercel scope: `redlegende`
+
+### Browser Checks
+- ✅ Page loads (HTTP 200)
+- ✅ Response time < 5s
+- ✅ No error patterns
+- ⚠️ Manual still needed: interactive features, JS console

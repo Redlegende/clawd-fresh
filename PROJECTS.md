@@ -95,13 +95,28 @@ python src/agent.py "Your research topic" -o report.md
 
 ---
 
-### Everything Dashboard
-**Status:** 🏗️ In Progress  
-**Location:** `projects/everything-dashboard/`
+### The Observatory (formerly Everything Dashboard)
+**Status:** 🏗️ In Progress — Autonomous Build Tonight  
+**Location:** `projects/the-observatory/`
 
-Personal kanban + health tracking + goals + Second Brain
-- Supabase tables created via MCP
-- Design complete, build in progress
+Personal command center: Mission Control + Kanban + Fitness Lab + Research Reader + Finance
+
+**Modules Planned:**
+1. **Mission Control** — Today's focus, quick stats, alerts
+2. **Kanban** — Drag-and-drop todos, project filtering
+3. **Fitness Lab** — Garmin Epix Pro sync (Body Battery, VO2 Max, HRV)
+4. **Research Reader** — Markdown viewer for notes
+5. **Finance** — Hours worked, earnings tracking
+
+**Tonight's Work (Auto-Scheduled 23:00):**
+- ✅ Install Garmin skill
+- ✅ Design Supabase schema
+- ✅ Initialize Next.js project
+- ⏳ Garmin auth (needs Jakob's credentials)
+- ⏳ Supabase connection (needs URL + key)
+
+**Tech Stack:** Next.js 16, Supabase, shadcn/ui, Recharts
+**See:** `projects/the-observatory/TONIGHT-WORK-PLAN.md` for full details
 
 ---
 
