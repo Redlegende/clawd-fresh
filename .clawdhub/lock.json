@@ -20,6 +20,10 @@
     "docstrange": {
       "version": "1.0.1",
       "installedAt": 1769994091214
+    },
+    "supabase": {
+      "version": "1.0.0",
+      "installedAt": 1770021622462
     }
   }
 }

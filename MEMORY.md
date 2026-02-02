@@ -80,7 +80,7 @@ Curated memories that persist across sessions. For raw daily logs, see `memory/Y
 
 ### Priority 3 - AI Systems
 6. ✅ **Freddy Research Agent** - Moonshot-based deep research, ~$0.05-0.50 per task
-7. 🏗️ **The Observatory** - Personal command center (Mission Control, Kanban, Fitness Lab, Research Reader) - Autonomous build tonight
+7. ✅ **The Observatory** - Personal command center FULLY OPERATIONAL. Supabase backend connected, 7 projects + 13 tasks populated. Frontend ready for live data.
 
 ---
 
@@ -95,6 +95,7 @@ Curated memories that persist across sessions. For raw daily logs, see `memory/Y
 | **Vercel** | ✅ Active | Kvitfjellhytter dashboard deployed |
 | **Supabase** | ✅ Active | MCP connected, all storage there |
 | **Project Automation** | ✅ READY | Full stack auto-setup (Supabase + Next.js + Vercel + browser verify) |
+| **Observatory** | ✅ LIVE | https://observatory-dashboard-two.vercel.app — Supabase connected, data populated |
 
 ---
 
@@ -105,6 +106,7 @@ Curated memories that persist across sessions. For raw daily logs, see `memory/Y
 | auto-updater | Daily OpenClaw + skill updates | `skills/auto-updater-1.0.0/` |
 | byterover | Project knowledge management | `skills/byterover/` |
 | clawddocs | OpenClaw documentation expert | `skills/clawddocs-1.2.2/` |
+| supabase | Database operations, SQL queries, CRUD | `skills/supabase/` |
 
 ---
 
@@ -241,6 +243,15 @@ Jakob's personal gut healing system based on Dr. William Davis's research.
 
 ## 📝 Recent Activity
 
+### 2026-02-02 — Observatory FULLY OPERATIONAL
+- ✅ FIXED: Supabase table creation via Management API (was blocked by REST API limitations)
+- ✅ Created all 5 tables + 3 views for Observatory
+- ✅ Populated database: 7 projects + 13 tasks from PROJECTS.md/TODO.md
+- ✅ Connected frontend to Supabase (credentials configured)
+- ✅ Installed `supabase` skill from ClawHub
+- ✅ Documented findings in `OBSERVATORY-BUILD-REPORT.md`
+- 🎯 Next: Deploy frontend with live data, test Garmin Connect
+
 ### 2026-02-01 — Workspace Migration Complete
 - Migrated from old `clawd/` workspace to `clawd-fresh/`
 - Created `WORKFLOW.md` — automatic progress tracking system
@@ -252,6 +263,56 @@ Jakob's personal gut healing system based on Dr. William Davis's research.
 ---
 
 *Last updated: 2026-02-01 — Migrated from old workspace + Project automation skill created*
+
+---
+
+## 🔧 Supabase Management Learnings (2026-02-02)
+
+### Critical Discovery: Two Different APIs
+| API | Purpose | Auth | Use For |
+|-----|---------|------|---------|
+| **REST API** (PostgREST) | CRUD on tables | `anon` or `service_role` key | SELECT, INSERT, UPDATE, DELETE |
+| **Management API** | Admin/DDL operations | Access token (`sbp_...`) | CREATE TABLE, CREATE VIEW, SQL queries |
+
+### Key Endpoints
+```bash
+# REST API (data operations)
+https://{project}.supabase.co/rest/v1/{table}
+
+# Management API (schema operations)
+https://api.supabase.com/v1/projects/{project_id}/database/query
+```
+
+### Creating Tables (The Right Way)
+**WRONG:** Using REST API or supabase-js client
+```javascript
+// This will NOT work
+supabase.from('sql').select('*')  // No such table
+```
+
+**RIGHT:** Using Management API with access token
+```bash
+curl -X POST "https://api.supabase.com/v1/projects/{id}/database/query" \
+  -H "Authorization: Bearer sbp_..." \
+  -d '{"query": "CREATE TABLE ..."}'
+```
+
+### Response Handling
+- Management API returns `[]` on success (not `{}`)
+- Empty array means "success, no rows returned"
+- HTTP 200 with `[]` = table created successfully
+
+### Credentials Location
+- Access token: `.project-automation.env` → `SUPABASE_TOKEN`
+- Anon key: Supabase dashboard → Project Settings → API
+- Service key: Same location (keep secret!)
+
+### Observatory Status (2026-02-02)
+**Supabase Project:** `vhrmxtolrrcrhrxljemp`  
+**Dashboard:** https://observatory-dashboard-two.vercel.app  
+**Tables:** projects, tasks, fitness_metrics, finance_entries, research_notes  
+**Views:** active_tasks, monthly_finance_summary, fitness_weekly_avg  
+**Data:** 7 projects, 13 tasks populated from PROJECTS.md/TODO.md
 
 ---
 
