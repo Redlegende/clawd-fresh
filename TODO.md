@@ -55,13 +55,16 @@ Peekaboo (launch/navigate) + Chrome Extension (debug/power) = Full Autonomy
 ```
 
 **🔴 Immediate Tasks:**
-- [ ] **Grant Peekaboo permissions** (Screen Recording + Accessibility)
-- [ ] **Pin OpenClaw extension** to Chrome toolbar
-- [ ] **Test hybrid workflow** on iGMS
-- [ ] **Document the workflow** in `skills/browser-autonomy/`
-- [ ] **Create reusable scripts** for common patterns
+- [x] **Grant Peekaboo permissions** (Screen Recording + Accessibility) — ✅ DONE 2026-02-03
+- [x] **Pin OpenClaw extension** to Chrome toolbar — ✅ DONE 2026-02-03
+- [ ] **Test hybrid workflow** on iGMS OAuth — ⏳ IN PROGRESS
+- [x] **Document the workflow** in `skills/browser-autonomy/` — ✅ DONE
+- [ ] **Calibrate extension click coordinates** — ⏳ Need Chrome window position
 
-**📁 Documentation:** `skills/browser-autonomy/` (already created)
+**📁 Documentation:** 
+- `skills/browser-autonomy/SKILL.md` — Skill definition
+- `skills/browser-autonomy/WORKFLOW-GUIDE.md` — Step-by-step workflow
+
 **🎯 Goal:** I can launch Chrome, navigate to any site, click the extension, and take full control without you micromanaging every click.
 
 ---
