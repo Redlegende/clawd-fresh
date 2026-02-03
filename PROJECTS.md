@@ -77,6 +77,43 @@
 
 ## 🤖 AI & AUTOMATION SYSTEMS
 
+### Hybrid Browser Autonomy
+**Status:** 🔴 CRITICAL — In Progress  
+**Location:** `skills/browser-autonomy/`  
+**Priority:** HIGHEST — Blocks all browser-based work
+
+**The Problem:**
+- Cannot debug iGMS OAuth without user clicking extension every time
+- Cannot access logged-in sessions autonomously
+- Limits error diagnosis and web automation capabilities
+
+**The Solution — Hybrid Approach:**
+1. **Peekaboo** launches/brings Chrome to front
+2. **Peekaboo** navigates to target site (iGMS, etc.)
+3. **Peekaboo** clicks OpenClaw extension icon in toolbar
+4. **Browser tool** takes over with full DOM access
+5. Debug, diagnose, document errors autonomously
+
+**Why This Works:**
+| Step | Tool | Capability |
+|------|------|------------|
+| Launch/Navigate | Peekaboo | Any browser, no permissions needed from user mid-flow |
+| Click extension | Peekaboo | One-time setup action |
+| Debug/Interact | Browser tool | Full DOM, console logs, network inspection |
+
+**Required Setup:**
+- [ ] Peekaboo permissions (Screen Recording + Accessibility)
+- [ ] OpenClaw extension pinned to Chrome toolbar
+- [ ] Chrome installed
+
+**Next Steps:**
+1. Grant permissions
+2. Test on iGMS OAuth
+3. Create reusable scripts
+4. Document full workflow
+
+---
+
 ### Freddy Research Agent
 **Status:** ✅ Working  
 **Location:** `projects/freddy-research-agent/`

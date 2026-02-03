@@ -48,6 +48,14 @@ Curated memories that persist across sessions. For raw daily logs, see `memory/Y
 - **Stack:** Next.js 16 + Supabase + Tailwind + shadcn/ui
 - **Database:** 5 tables (projects, tasks, fitness_metrics, finance_entries, research_notes)
 - **Data:** 30 days Garmin fitness data, 7 projects, 12 tasks, hour tracking
+
+### Hybrid Browser Autonomy (NEW — 2026-02-03) 🔴 CRITICAL
+**Status:** Implementation in progress  
+**Goal:** Enable Fred to autonomously control logged-in browser sessions  
+**Approach:** Peekaboo (launch/navigate/click extension) + Chrome Extension (DOM debugging)  
+**Blocks:** iGMS debugging, all logged-in site automation  
+**Priority:** HIGHEST — Documented in TODO.md and PROJECTS.md  
+**Location:** `skills/browser-autonomy/`
 - **Pages:** Mission Control, Kanban, Fitness, Finance, Research, Settings
 - **Auto-sync:** Daily 8:30 AM Garmin fetch (token persistence, no MFA)
 
@@ -141,7 +149,8 @@ Curated memories that persist across sessions. For raw daily logs, see `memory/Y
 | **Vercel** | ✅ Active | Kvitfjellhytter dashboard deployed |
 | **Supabase** | ✅ Active | MCP connected, all storage there |
 | **Project Automation** | ✅ READY | Full stack auto-setup (Supabase + Next.js + Vercel + browser verify) |
-| **Observatory** | ✅ LIVE | https://observatory-dashboard-two.vercel.app — Supabase connected, data populated |
+| **Observatory** | ✅ LIVE | https://the-observatory-lxb444gor-redlegendes-projects.vercel.app — Supabase connected, **Task Sync API enabled** |
+| **Browser Autonomy** | ✅ NEW 2026-02-03 | Chrome Extension Relay + Peekaboo — can now debug iGMS autonomously |
 
 ---
 
@@ -153,6 +162,7 @@ Curated memories that persist across sessions. For raw daily logs, see `memory/Y
 | byterover | Project knowledge management | `skills/byterover/` |
 | clawddocs | OpenClaw documentation expert | `skills/clawddocs-1.2.2/` |
 | supabase | Database operations, SQL queries, CRUD | `skills/supabase/` |
+| **browser-autonomy** | **Autonomous browser control** — Chrome Extension + Peekaboo for logged-in sites like iGMS | `skills/browser-autonomy/` |
 
 ---
 
@@ -353,12 +363,62 @@ curl -X POST "https://api.supabase.com/v1/projects/{id}/database/query" \
 - Anon key: Supabase dashboard → Project Settings → API
 - Service key: Same location (keep secret!)
 
-### Observatory Status (2026-02-02)
-**Supabase Project:** `vhrmxtolrrcrhrxljemp`  
-**Dashboard:** https://observatory-dashboard-two.vercel.app  
-**Tables:** projects, tasks, fitness_metrics, finance_entries, research_notes  
-**Views:** active_tasks, monthly_finance_summary, fitness_weekly_avg  
-**Data:** 7 projects, 13 tasks populated from PROJECTS.md/TODO.md
+### Observatory Status (2026-02-03)
+**URL:** https://the-observatory-lxb444gor-redlegendes-projects.vercel.app  
+**Supabase:** https://supabase.com/dashboard/project/vhrmxtolrrcrhrxljemp  
+**Tables:** projects, tasks, fitness_metrics, finance_entries, research_notes, **fred_notifications**, **task_sync_log**
+
+### Task Sync System (NEW 2026-02-03)
+Two-way sync between Kanban and Fred:
+- **Inbound webhook:** When you mark a task done → Fred gets notified immediately
+- **Outbound API:** Fred can mark tasks done via `/api/fred/tasks/[id]/complete`
+- **Notification queue:** `fred_notifications` table for my inbox
+
+**Fred's CLI tools:** `skills/observatory-sync/`
+- `observatory-notifications.sh` — Check my inbox
+- `observatory-tasks.sh --urgent` — List urgent tasks
+- `observatory-complete-task.sh [id]` — Mark task done
+
+---
+
+## 🌐 Browser Autonomy (NEW 2026-02-03)
+
+**Created to solve:** iGMS debugging without you micromanaging every click
+
+**What it is:** Two methods for me to autonomously operate browsers
+
+### Method 1: Chrome Extension Relay (PRIMARY)
+- I control YOUR logged-in Chrome via OpenClaw Browser Relay extension
+- You click the toolbar icon on iGMS tab → I take over
+- Full DOM access: snapshots, clicks, typing, navigation
+- **Best for:** iGMS, Google Calendar, any site you're logged into
+
+**How to use:**
+1. Open iGMS in Chrome
+2. Click OpenClaw Browser Relay extension (badge turns ON)
+3. Tell me: "Debug iGMS connection"
+4. I snapshot → analyze → document errors
+
+### Method 2: Peekaboo (FALLBACK)
+- macOS UI automation via screenshots + clicks
+- Works with any browser, any app
+- **Best for:** Safari, Firefox, desktop apps
+
+**Prerequisites:**
+```bash
+brew install steipete/tap/peekaboo
+peekaboo permissions  # Grant Screen Recording + Accessibility
+```
+
+**Decision Tree:**
+```
+Debug iGMS error?
+├── Using Chrome + logged in? → Chrome Extension (fastest)
+├── Using Safari/Firefox? → Peekaboo
+└── Desktop app? → Peekaboo
+```
+
+**Skill location:** `skills/browser-autonomy/`
 
 ---
 

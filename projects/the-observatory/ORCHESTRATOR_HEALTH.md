@@ -8,10 +8,27 @@
 
 | Metric | Current | Threshold | Status |
 |--------|---------|-----------|--------|
-| Context Usage | N/A | >80% | Check before each major task |
-| Active Tasks | N/A | >10 | Alert user, prioritize |
+| Context Usage | Est. 30-40K | >80K ⚠️ | Reset if approaching |
+| Session Messages | Track | >40 | Summarize & delegate |
+| Tool Calls | Track | >30 | Spawn sub-agent |
+| File Reads | Track | >20 | Batch reads |
 | Error Rate (1h) | N/A | >3 | Pause, investigate |
 | Unverified "Done" | N/A | >0 | Verify before reporting |
+
+### Context Overflow Prevention
+
+**When context > 80K tokens:**
+1. Stop current operation
+2. Summarize state in < 500 tokens
+3. Spawn sub-agent with summary
+4. Sub-agent completes task
+5. Report back to user
+
+**Early Warning Triggers:**
+- Single file read > 50KB
+- Error output > 500 lines
+- 5+ consecutive tool calls
+- Conversation > 30 messages
 
 ---
 

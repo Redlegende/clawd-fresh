@@ -8,11 +8,12 @@
 
 | Priority | Task | Project | Status |
 |----------|------|---------|--------|
-| 1 | **🎯 3dje Boligsektor Phase 2** — Apply for Kartverket Matrikkel agreement | 3dje Boligsektor | 🔴 BLOCKER for owner lookup |
-| 2 | **Connect iGMS OAuth** — Click "Connect iGMS" on dashboard and authorize | Kvitfjellhytter | Code ready, needs your auth |
-| 3 | **Test iGMS API** with real data after OAuth | Kvitfjellhytter | Blocked until #2 done |
-| 4 | **🌙 The Observatory Build** — Supabase LIVE, 30 days Garmin data, all pages working | The Observatory | ✅ COMPLETE |
-| 5 | **🤖 Sub-Agent Setup** — All agents operational | System | ✅ COMPLETE |
+| 1 | **🚀 Hybrid Browser Autonomy** — Build skill for autonomous web control (Peekaboo + Extension) | System | 🔴 HIGH PRIORITY — Enables true autonomy |
+| 2 | **🎯 3dje Boligsektor Phase 2** — Apply for Kartverket Matrikkel agreement | 3dje Boligsektor | 🔴 BLOCKER for owner lookup |
+| 3 | **Connect iGMS OAuth** — Click "Connect iGMS" on dashboard and authorize | Kvitfjellhytter | Code ready, needs your auth |
+| 4 | **Test iGMS API** with real data after OAuth | Kvitfjellhytter | Blocked until #3 done |
+| 5 | **🌙 The Observatory Build** — Supabase LIVE, 30 days Garmin data, all pages working | The Observatory | ✅ COMPLETE |
+| 6 | **🤖 Sub-Agent Setup** — All agents operational | System | ✅ COMPLETE |
 
 ### ✅ COMPLETED TODAY (2026-02-03)
 
@@ -44,9 +45,28 @@
 - [x] Sub-agent delegation working
 - [x] All agents using Kimi 2.5 exclusively
 
-### 🔧 System Improvements (IN PROGRESS)
+### 🚀 Hybrid Browser Autonomy — CRITICAL PRIORITY
 
-**Orchestrator Health System:**
+**Why this matters:** I cannot debug iGMS, access logged-in services, or operate autonomously without this. It's blocking your accounting and all future browser-based work.
+
+**The Hybrid Approach:**
+```
+Peekaboo (launch/navigate) + Chrome Extension (debug/power) = Full Autonomy
+```
+
+**🔴 Immediate Tasks:**
+- [ ] **Grant Peekaboo permissions** (Screen Recording + Accessibility)
+- [ ] **Pin OpenClaw extension** to Chrome toolbar
+- [ ] **Test hybrid workflow** on iGMS
+- [ ] **Document the workflow** in `skills/browser-autonomy/`
+- [ ] **Create reusable scripts** for common patterns
+
+**📁 Documentation:** `skills/browser-autonomy/` (already created)
+**🎯 Goal:** I can launch Chrome, navigate to any site, click the extension, and take full control without you micromanaging every click.
+
+---
+
+### 🔧 System Improvements (IN PROGRESS)
 - [x] Create FAILURE_LOG.md — Track failed attempts to avoid repetition
 - [x] Create ORCHESTRATOR_HEALTH.md — Self-monitoring system
 - [ ] Implement context usage checks

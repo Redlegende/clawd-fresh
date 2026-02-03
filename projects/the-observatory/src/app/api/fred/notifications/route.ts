@@ -20,7 +20,16 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false })
       .limit(50)
     
-    if (error) throw error
+    if (error) {
+      console.error('Error fetching notifications:', error)
+      // Return empty if table doesn't exist yet
+      return NextResponse.json({
+        notifications: [],
+        recent_completed: [],
+        unread_count: 0,
+        timestamp: new Date().toISOString()
+      })
+    }
     
     // Get count of recent completed tasks (last 24h)
     const { data: recentCompleted, error: recentError } = await supabase
