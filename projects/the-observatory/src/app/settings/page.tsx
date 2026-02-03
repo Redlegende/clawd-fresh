@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, RefreshCw, CheckCircle, AlertCircle, Link2, Unlink, Bell } from 'lucide-react';
+import { Calendar, RefreshCw, CheckCircle, AlertCircle, Link2, Unlink, Bell, Settings } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -23,41 +23,34 @@ interface CalendarConnection {
   calendars: { id: string; summary: string; primary: boolean }[];
 }
 
-interface WebhookStatus {
-  connected: boolean;
-  webhook_active: boolean;
-  webhook_expires_at: string | null;
-  sync_enabled: boolean;
-  last_sync_at: string | null;
-}
-
 export default function SettingsPage() {
   const [connection, setConnection] = useState<CalendarConnection | null>(null);
-  const [webhookStatus, setWebhookStatus] = useState<WebhookStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     fetchConnection();
-    fetchWebhookStatus();
     
-    // Check for query params
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('success') === 'calendar_connected') {
-      setMessage({ type: 'success', text: 'Calendar connected successfully!' });
-      // Clear params
-      window.history.replaceState({}, '', window.location.pathname);
-    } else if (params.get('error')) {
-      const error = params.get('error');
-      const errorMessages: Record<string, string> = {
-        'oauth_denied': 'Access denied. You can reconnect anytime.',
-        'no_code': 'Authentication failed. Please try again.',
-        'db_error': 'Failed to save calendar. Please try again.',
-        'oauth_failed': 'Google authentication failed. Please try again.',
-      };
-      setMessage({ type: 'error', text: errorMessages[error!] || 'Something went wrong.' });
-      window.history.replaceState({}, '', window.location.pathname);
+    // Check for query params safely
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('success') === 'calendar_connected') {
+        setMessage({ type: 'success', text: 'Calendar connected successfully!' });
+        window.history.replaceState({}, '', window.location.pathname);
+      } else if (params.get('error')) {
+        const error = params.get('error');
+        const errorMessages: Record<string, string> = {
+          'oauth_denied': 'Access denied. You can reconnect anytime.',
+          'no_code': 'Authentication failed. Please try again.',
+          'db_error': 'Failed to save calendar. Please try again.',
+          'oauth_failed': 'Google authentication failed. Please try again.',
+        };
+        setMessage({ type: 'error', text: errorMessages[error!] || 'Something went wrong.' });
+        window.history.replaceState({}, '', window.location.pathname);
+      }
     }
   }, []);
 
@@ -82,18 +75,6 @@ export default function SettingsPage() {
     }
   }
 
-  async function fetchWebhookStatus() {
-    try {
-      const response = await fetch('/api/calendar/webhook/setup');
-      if (response.ok) {
-        const data = await response.json();
-        setWebhookStatus(data);
-      }
-    } catch (error) {
-      console.error('Error fetching webhook status:', error);
-    }
-  }
-
   async function handleConnect() {
     window.location.href = '/api/auth/google';
   }
@@ -102,10 +83,6 @@ export default function SettingsPage() {
     if (!confirm('Are you sure you want to disconnect your calendar?')) return;
 
     try {
-      // Stop webhook first
-      await fetch('/api/calendar/webhook/setup', { method: 'DELETE' });
-
-      // Delete connection
       const { error } = await supabase
         .from('calendars')
         .delete()
@@ -115,7 +92,6 @@ export default function SettingsPage() {
       if (error) throw error;
 
       setConnection(null);
-      setWebhookStatus(null);
       setMessage({ type: 'success', text: 'Calendar disconnected.' });
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to disconnect calendar.' });
@@ -130,12 +106,11 @@ export default function SettingsPage() {
         const data = await response.json();
         setMessage({ 
           type: 'success', 
-          text: `Synced ${data.total_events_synced} events from ${data.calendars_successful} calendars!` 
+          text: `Synced ${data.total_events_synced || 0} events!` 
         });
         fetchConnection();
       } else {
-        const error = await response.json();
-        setMessage({ type: 'error', text: error.error || 'Sync failed.' });
+        setMessage({ type: 'error', text: 'Sync failed.' });
       }
     } catch (error) {
       setMessage({ type: 'error', text: 'Sync failed.' });
@@ -144,47 +119,41 @@ export default function SettingsPage() {
     }
   }
 
-  async function handleSetupWebhook() {
-    setSyncing(true);
-    try {
-      const response = await fetch('/api/calendar/webhook/setup', { method: 'POST' });
-      if (response.ok) {
-        const data = await response.json();
-        setMessage({ 
-          type: 'success', 
-          text: `Real-time sync enabled! Expires ${new Date(data.expiration).toLocaleDateString()}` 
-        });
-        fetchWebhookStatus();
-      } else {
-        const error = await response.json();
-        setMessage({ type: 'error', text: error.error || 'Webhook setup failed.' });
-      }
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Webhook setup failed.' });
-    } finally {
-      setSyncing(false);
-    }
-  }
-
-  const isWebhookExpired = webhookStatus?.webhook_expires_at 
-    ? new Date(webhookStatus.webhook_expires_at) < new Date()
-    : true;
-
-  if (loading) {
+  // Prevent hydration mismatch
+  if (!mounted) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <RefreshCw className="w-8 h-8 animate-spin text-cyan-500" />
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold flex items-center gap-2">
+            <Settings className="h-6 w-6" />
+            Settings
+          </h1>
+          <p className="text-muted-foreground mt-1">Manage your integrations and preferences</p>
+        </div>
+        <Card>
+          <CardContent className="p-8">
+            <div className="flex items-center justify-center">
+              <RefreshCw className="w-6 h-6 animate-spin text-cyan-500" />
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Settings</h1>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold flex items-center gap-2">
+          <Settings className="h-6 w-6" />
+          Settings
+        </h1>
+        <p className="text-muted-foreground mt-1">Manage your integrations and preferences</p>
+      </div>
 
       {message && (
         <div
-          className={`mb-6 p-4 rounded-lg flex items-center gap-2 ${
+          className={`p-4 rounded-lg flex items-center gap-2 ${
             message.type === 'success'
               ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
               : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
@@ -210,7 +179,11 @@ export default function SettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {connection ? (
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <RefreshCw className="w-6 h-6 animate-spin text-cyan-500" />
+            </div>
+          ) : connection ? (
             <>
               <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                 <div className="flex items-center gap-3">
@@ -233,17 +206,6 @@ export default function SettingsPage() {
                 </Badge>
               </div>
 
-              {/* Webhook Status */}
-              <div className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <Bell className={`w-4 h-4 ${webhookStatus?.webhook_active && !isWebhookExpired ? 'text-green-500' : 'text-gray-400'}`} />
-                <span className="text-sm">
-                  {webhookStatus?.webhook_active && !isWebhookExpired 
-                    ? `Real-time sync active (expires ${new Date(webhookStatus.webhook_expires_at!).toLocaleDateString()})`
-                    : 'Real-time sync inactive'
-                  }
-                </span>
-              </div>
-
               {connection.calendars && connection.calendars.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-sm font-medium">Connected Calendars:</p>
@@ -260,18 +222,11 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 pt-2">
                 <Button onClick={handleSync} disabled={syncing} variant="outline">
                   <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
                   {syncing ? 'Syncing...' : 'Sync Now'}
                 </Button>
-                
-                {(!webhookStatus?.webhook_active || isWebhookExpired) && (
-                  <Button onClick={handleSetupWebhook} disabled={syncing} variant="outline">
-                    <Bell className="w-4 h-4 mr-2" />
-                    Enable Real-time Sync
-                  </Button>
-                )}
                 
                 <Button onClick={handleDisconnect} variant="destructive">
                   <Unlink className="w-4 h-4 mr-2" />
@@ -293,6 +248,43 @@ export default function SettingsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Additional Settings */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bell className="w-5 h-5" />
+              Notifications
+            </CardTitle>
+            <CardDescription>
+              Configure how you want to be notified.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Notification settings will be available soon.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="w-5 h-5" />
+              General
+            </CardTitle>
+            <CardDescription>
+              App preferences and defaults.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              General settings will be available soon.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

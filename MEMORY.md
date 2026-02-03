@@ -26,6 +26,15 @@ Curated memories that persist across sessions. For raw daily logs, see `memory/Y
 - Design system: Clean modern SaaS, cyan primary (#0891B2), Plus Jakarta Sans
 - **Status:** UI deployed, iGMS OAuth code ready, needs connection testing
 
+**🏠 Cabins & Management Rules (CRITICAL):**
+- **Cabins:** cabin 12, cabin 13, cabin 22, cabin 23, Ringebuhuset
+- **Cleaning is NON-NEGOTIABLE** - Business-critical, must happen
+- **Cleaning window:** 11:00–15:00 (4 hours max)
+- **CRITICAL RULE:** If cleaning + check-in on same day → Jakob CANNOT drive
+  - Must either have someone else working, OR not drive that day
+- **Non-check-in cleaning days:** Can block calendar so no bookings
+- **Current system:** Calendar events marked with 🧹 CLEAN (red) and 🏠 CHECK-IN (green)
+
 ### 3dje Boligsektor (HIGH PRIORITY)
 - **Collaboration with Henrik** - Real estate development for social housing
 - **Phase 1:** Clay-based kommune analysis (126 kommuner, 3 fokus) ✅ COMPLETE
@@ -33,6 +42,14 @@ Curated memories that persist across sessions. For raw daily logs, see `memory/Y
 - **Goal:** Pipeline towards 10,000+ boliger
 - **Key data sources:** SSB, Kartverket, Arealplaner.no, Husbanken
 - **Tech approach:** GIS analysis + grunneier outreach + megler network
+
+### The Observatory (LIVE — 2026-02-03)
+- **Dashboard:** https://the-observatory-2k8lny34s-redlegendes-projects.vercel.app
+- **Stack:** Next.js 16 + Supabase + Tailwind + shadcn/ui
+- **Database:** 5 tables (projects, tasks, fitness_metrics, finance_entries, research_notes)
+- **Data:** 30 days Garmin fitness data, 7 projects, 12 tasks, hour tracking
+- **Pages:** Mission Control, Kanban, Fitness, Finance, Research, Settings
+- **Auto-sync:** Daily 8:30 AM Garmin fetch (token persistence, no MFA)
 
 **📁 Research Complete (2026-02-01):**
 - `MASTER-SYNTHESIS.md` — Complete system design & 8-week roadmap
@@ -67,12 +84,41 @@ Curated memories that persist across sessions. For raw daily logs, see `memory/Y
 
 ---
 
+## 🤖 Sub-Agent Architecture (IMPLEMENTED 2026-02-03)
+
+**Philosophy:** I am the orchestrator, not the soloist. Delegate coding/DevOps/data to specialized agents.
+
+**Active Agents (All Kimi 2.5):**
+| Agent | Role | Tasks |
+|-------|------|-------|
+| **Code Agent** | TypeScript/React/Next.js | Frontend fixes, components, builds |
+| **DevOps Agent** | Vercel/Supabase | Deployments, env vars, infrastructure |
+| **Data Agent** | Python/SQL | Garmin sync, data imports, reports |
+| **QA Agent** | Testing | Verification, health checks, validation |
+| **Research Agent** | Deep research | Summaries, transcription, analysis |
+
+**Orchestrator Health System:**
+- FAILURE_LOG.md — Track failed attempts, prevent repetition
+- ORCHESTRATOR_HEALTH.md — Self-monitoring, vital signs
+- Decision log — Record "why" for architectural choices
+- Escalation triggers — Confidence < 70%, timeout, contradiction
+
+**Key Rules:**
+- Research BEFORE patching (don't fix what you don't understand)
+- Verify before reporting "done"
+- Use Kimi 2.5 exclusively (no cheaper models without approval)
+- Log every fix attempt
+- Wait for user verification on critical features
+
+---
+
 ## 🎯 Active Goals
 
 ### Priority 1 - Business
 1. ✅ Kvitfjellhytter website structure complete
 2. ✅ Kvitfjellhytter owner dashboard deployed
-3. 🔴 **3dje Boligsektor Phase 2 planning** - Tomte-sourcing system (HIGH PRIORITY)
+3. ✅ The Observatory LIVE — Full system operational
+4. 🔴 **3dje Boligsektor Phase 2 planning** - Tomte-sourcing system (HIGH PRIORITY)
 
 ### Priority 2 - Personal Systems
 4. ⏳ **Hour Tracking System** - Phase 1A working (text reporting), Phase 1B planned (PDF → calendar)
