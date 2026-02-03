@@ -24,6 +24,22 @@
     "supabase": {
       "version": "1.0.0",
       "installedAt": 1770021622462
+    },
+    "meta-tags": {
+      "version": "0.1.0",
+      "installedAt": 1770080426798
+    },
+    "hybrid-memory": {
+      "version": "1.0.1",
+      "installedAt": 1770080429415
+    },
+    "computer-use": {
+      "version": "1.2.0",
+      "installedAt": 1770080431845
+    },
+    "prompt-optimizer": {
+      "version": "1.0.0",
+      "installedAt": 1770080433820
     }
   }
 }

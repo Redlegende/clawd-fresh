@@ -3,12 +3,8 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
-// Client for the orchestrator schema (main app data)
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  db: {
-    schema: 'orchestrator'
-  }
-})
+// Client for the public schema (main app data)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // Client for public schema (if needed)
 export const supabasePublic = createClient(supabaseUrl, supabaseAnonKey)

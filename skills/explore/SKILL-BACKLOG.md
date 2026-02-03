@@ -35,10 +35,11 @@ Skills discovered from clawdhub that may enhance capabilities. Research up to 5 
 - **Location:** `skills/explore/google-sheet/`
 
 ### meta-tags v0.1.0
-- **Description:** Generate HTML meta tags for SEO, Open Graph, Twitter Cards
+- **Description:** Generate HTML meta tags for SEO, Open Graph, Twitter Cards, JSON-LD
 - **Relevance:** Kvitfjellhytter website SEO optimization
-- **Status:** 📝 Pending
-- **Notes:** Check if overlaps with Next.js built-in metadata API
+- **Status:** ❌ SKIP
+- **Verdict:** Simple CLI tool with HTML/React/Vue output formats. However, Next.js has built-in metadata API (`export const metadata = {...}`) that handles this natively with better framework integration. No additional value over built-in capabilities.
+- **Location:** `skills/explore/meta-tags/`
 
 ### docstrange v1.0.1
 - **Description:** Document extraction API by Nanonets — OCR, invoice parsing, table extraction with confidence scores
@@ -61,26 +62,30 @@ Skills discovered from clawdhub that may enhance capabilities. Research up to 5 
 ### capability-evolver v1.0.29
 - **Description:** Self-evolution engine for AI agents. Analyzes reflection logs and adapts
 - **Relevance:** Interesting for autonomous agent improvement
-- **Status:** 📝 Pending
-- **Notes:** Might overlap with byterover memory system
+- **Status:** ❌ NOT FOUND
+- **Verdict:** Skill not found in clawdhub. May have been removed or renamed.
+- **Location:** N/A
 
 ### hybrid-memory v1.0.1
-- **Description:** Hybrid memory strategy combining OpenClaw's built-in memory with external vector DB
-- **Relevance:** Could enhance memory system beyond current MEMORY.md approach
-- **Status:** 📝 Pending
-- **Notes:** Compare to byterover skill already installed
+- **Description:** Hybrid memory combining OpenClaw's built-in vector memory with Graphiti temporal knowledge graph
+- **Relevance:** Enhanced temporal memory ("when did X happen?")
+- **Status:** 🤔 MAYBE
+- **Verdict:** Graphiti adds temporal/entity tracking (when things happened, relationships) vs byterover's context tree. Requires Docker stack + embedding provider setup. Useful for long-running agent memory but adds significant infrastructure complexity. Defer until clear temporal query need emerges.
+- **Location:** `skills/explore/hybrid-memory/`
 
 ### computer-use v1.1.0
-- **Description:** Full desktop computer use for headless Linux servers (Ubuntu + Playwright)
-- **Relevance:** Could enable GUI automation for tasks not available via API
-- **Status:** 📝 Pending
-- **Notes:** Heavy dependency; evaluate necessity
+- **Description:** Full desktop GUI control for headless Linux servers (Xvfb + XFCE + VNC)
+- **Relevance:** VPS/desktop GUI automation
+- **Status:** ❌ SKIP
+- **Verdict:** Designed for headless Linux VPS (Ubuntu), not macOS. Jakob operates locally on Mac. Browser tool already handles web automation. 17 actions (click, type, scroll, etc.) but no current use case. Skip unless setting up Linux VPS agents.
+- **Location:** `skills/explore/computer-use/`
 
 ### prompt-optimizer v1.0.0
-- **Description:** Evaluate, optimize, and enhance prompts using 58+ techniques
-- **Relevance:** Could improve prompt quality across all systems
-- **Status:** 📝 Pending
-- **Notes:** Might be useful for Freddy Research Agent prompts
+- **Description:** Evaluate, optimize, and enhance prompts using 58 proven prompting techniques
+- **Relevance:** Improve Freddy Research Agent and all prompt-based systems
+- **Status:** ✅ INSTALL
+- **Verdict:** Comprehensive framework with quality dimensions (clarity, specificity, structure), 58 techniques catalog (CoT, few-shot, role-play, etc.), and Python scripts for evaluation/optimization. Perfect for systematically improving Freddy Research Agent prompts and future agent systems.
+- **Location:** `skills/explore/prompt-optimizer/`
 
 ---
 
@@ -210,6 +215,7 @@ Skills discovered from clawdhub that may enhance capabilities. Research up to 5 
 | Date | Skills Researched | Verdicts |
 |------|-------------------|----------|
 | 2026-02-02 | google-calendar, clawmail-skill, google-sheet, agent-builder, docstrange | 2 INSTALL, 2 MAYBE, 1 SKIP |
+| 2026-02-03 | meta-tags, hybrid-memory, computer-use, prompt-optimizer, capability-evolver | 1 INSTALL, 1 MAYBE, 2 SKIP, 1 NOT FOUND |
 
 ---
 

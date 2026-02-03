@@ -11,7 +11,7 @@
 | 1 | **🎯 3dje Boligsektor Phase 2** — Apply for Kartverket Matrikkel agreement | 3dje Boligsektor | 🔴 BLOCKER for owner lookup |
 | 2 | **Connect iGMS OAuth** — Click "Connect iGMS" on dashboard and authorize | Kvitfjellhytter | Code ready, needs your auth |
 | 3 | **Test iGMS API** with real data after OAuth | Kvitfjellhytter | Blocked until #2 done |
-| 4 | **🌙 The Observatory Build** — Autonomous work completed (see Telegram report) | The Observatory | ✅ Complete, needs credentials |
+| 4 | **🌙 The Observatory Build** — Supabase LIVE, 7 projects + 12 tasks populated. Garmin auth blocked (401) | The Observatory | ✅ DB ready, 🔴 needs Garmin fix |
 
 ---
 

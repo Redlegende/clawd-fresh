@@ -1,0 +1,387 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { google } from 'googleapis';
+import { createClient } from '@supabase/supabase-js';
+
+// Debug logging helper
+const debug = (...args: any[]) => {
+  if (process.env.DEBUG_OAUTH === 'true') {
+    console.log('[OAuth Debug]', ...args);
+  }
+};
+
+const oauth2Client = new google.auth.OAuth2(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/auth/callback/google'
+);
+
+// Create Supabase client with SERVICE ROLE and correct schema
+// CRITICAL: Must use orchestrator schema as defined in the database
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_KEY!,
+  {
+    db: {
+      schema: 'orchestrator'  // CRITICAL: Database uses orchestrator schema
+    },
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false  // Prevent session mixing for service role
+    }
+  }
+);
+
+// Hardcoded user ID - should ideally come from session/auth
+const USER_ID = 'b4004bf7-9b69-47e5-8032-c0f39c654a61';
+
+export async function GET(request: NextRequest) {
+  const errors: string[] = [];
+  
+  try {
+    debug('Starting OAuth callback');
+    
+    const searchParams = request.nextUrl.searchParams;
+    const code = searchParams.get('code');
+    const error = searchParams.get('error');
+    const state = searchParams.get('state');
+
+    debug('Query params:', { code: code ? 'present' : 'missing', error, state });
+
+    // Handle OAuth provider errors
+    if (error) {
+      console.error('Google OAuth error:', error);
+      return NextResponse.redirect(
+        new URL(`/settings?error=oauth_denied&details=${encodeURIComponent(error)}`, request.url)
+      );
+    }
+
+    if (!code) {
+      errors.push('No authorization code received from Google');
+      return NextResponse.redirect(
+        new URL('/settings?error=no_code', request.url)
+      );
+    }
+
+    // Step 1: Exchange code for tokens
+    debug('Exchanging code for tokens...');
+    let tokens;
+    try {
+      const tokenResponse = await oauth2Client.getToken(code);
+      tokens = tokenResponse.tokens;
+      debug('Token exchange successful:', { 
+        hasAccessToken: !!tokens.access_token,
+        hasRefreshToken: !!tokens.refresh_token,
+        expiryDate: tokens.expiry_date
+      });
+    } catch (tokenError: any) {
+      console.error('Token exchange failed:', tokenError);
+      errors.push(`Token exchange failed: ${tokenError.message}`);
+      return NextResponse.redirect(
+        new URL(`/settings?error=token_exchange&details=${encodeURIComponent(tokenError.message)}`, request.url)
+      );
+    }
+
+    oauth2Client.setCredentials(tokens);
+
+    // Step 2: Get user info from Google
+    debug('Fetching Google user info...');
+    let userInfo;
+    try {
+      const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
+      const { data } = await oauth2.userinfo.get();
+      userInfo = data;
+      debug('User info retrieved:', { id: userInfo.id, email: userInfo.email });
+    } catch (userInfoError: any) {
+      console.error('Failed to get user info:', userInfoError);
+      errors.push(`User info fetch failed: ${userInfoError.message}`);
+      return NextResponse.redirect(
+        new URL(`/settings?error=user_info&details=${encodeURIComponent(userInfoError.message)}`, request.url)
+      );
+    }
+
+    // Step 3: Get calendar list
+    debug('Fetching calendar list...');
+    let calendarList;
+    try {
+      const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+      const { data } = await calendar.calendarList.list();
+      calendarList = data;
+      debug('Calendar list retrieved:', { count: calendarList.items?.length });
+    } catch (calendarError: any) {
+      console.error('Failed to get calendar list:', calendarError);
+      errors.push(`Calendar list fetch failed: ${calendarError.message}`);
+      return NextResponse.redirect(
+        new URL(`/settings?error=calendar_list&details=${encodeURIComponent(calendarError.message)}`, request.url)
+      );
+    }
+
+    // Find primary calendar
+    const primaryCal = calendarList.items?.find(c => c.primary) || calendarList.items?.[0];
+    
+    if (!primaryCal) {
+      errors.push('No calendars found in Google account');
+      return NextResponse.redirect(
+        new URL('/settings?error=no_calendars', request.url)
+      );
+    }
+
+    debug('Primary calendar:', { id: primaryCal.id, summary: primaryCal.summary });
+
+    // Step 4: Verify user exists in database
+    debug('Verifying user exists...');
+    const { data: userExists, error: userCheckError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('id', USER_ID)
+      .single();
+
+    if (userCheckError) {
+      console.error('User check error:', userCheckError);
+      errors.push(`User verification failed: ${userCheckError.message}`);
+      return NextResponse.redirect(
+        new URL(`/settings?error=user_check&details=${encodeURIComponent(userCheckError.message)}`, request.url)
+      );
+    }
+
+    if (!userExists) {
+      errors.push(`User ${USER_ID} does not exist in database`);
+      return NextResponse.redirect(
+        new URL('/settings?error=user_not_found', request.url)
+      );
+    }
+
+    debug('User verified:', userExists.id);
+
+    // Step 5: Prepare calendar data
+    const calendarData = {
+      user_id: USER_ID,
+      provider: 'google',
+      provider_account_id: userInfo.id,
+      external_id: primaryCal?.id,
+      name: primaryCal?.summary || 'Google Calendar',
+      email: userInfo.email,
+      color: primaryCal?.backgroundColor || '#4285F4',
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      expires_at: tokens.expiry_date ? new Date(tokens.expiry_date).toISOString() : null,
+      scopes: tokens.scope?.split(' ') || [],
+      calendars: calendarList.items?.map(cal => ({
+        id: cal.id,
+        summary: cal.summary,
+        primary: cal.primary || false,
+        selected: cal.selected || false,
+      })),
+      sync_enabled: true,
+      is_active: true,
+      updated_at: new Date().toISOString(),
+    };
+
+    debug('Calendar data prepared:', { 
+      user_id: calendarData.user_id,
+      provider: calendarData.provider,
+      external_id: calendarData.external_id,
+      name: calendarData.name
+    });
+
+    // Step 6: Store in database
+    debug('Attempting database upsert...');
+    
+    const { data: upsertData, error: dbError } = await supabase
+      .from('calendars')
+      .upsert(calendarData, {
+        onConflict: 'user_id,provider,external_id'
+      })
+      .select();
+
+    if (dbError) {
+      console.error('Database error:', dbError);
+      
+      // Provide detailed error information
+      const errorDetails = {
+        message: dbError.message,
+        code: dbError.code,
+        details: dbError.details,
+        hint: dbError.hint,
+      };
+      
+      console.error('Full error object:', JSON.stringify(errorDetails, null, 2));
+      
+      errors.push(`Database error: ${dbError.message}`);
+      
+      return NextResponse.redirect(
+        new URL(
+          `/settings?error=db_error&details=${encodeURIComponent(JSON.stringify(errorDetails))}`,
+          request.url
+        )
+      );
+    }
+
+    debug('Database upsert successful:', upsertData);
+
+    // Step 7: Trigger initial sync (non-blocking)
+    debug('Starting initial sync...');
+    try {
+      await syncInitialEvents(tokens.access_token!, userInfo.id!);
+      debug('Initial sync completed');
+    } catch (syncError: any) {
+      console.error('Initial sync error (non-blocking):', syncError);
+      // Don't fail the whole flow for sync errors
+    }
+
+    // Step 8: Setup webhook (non-blocking)
+    debug('Setting up webhook...');
+    try {
+      await setupWebhook(userInfo.id!);
+      debug('Webhook setup completed');
+    } catch (webhookError: any) {
+      console.error('Webhook setup failed (non-blocking):', webhookError);
+      // Continue - webhook can be set up manually later
+    }
+
+    debug('OAuth callback completed successfully');
+    return NextResponse.redirect(
+      new URL('/settings?success=calendar_connected', request.url)
+    );
+
+  } catch (error: any) {
+    console.error('Unexpected OAuth callback error:', error);
+    errors.push(`Unexpected error: ${error.message}`);
+    
+    return NextResponse.redirect(
+      new URL(
+        `/settings?error=oauth_failed&details=${encodeURIComponent(error.message)}`,
+        request.url
+      )
+    );
+  }
+}
+
+async function syncInitialEvents(accessToken: string, userId: string) {
+  const syncErrors: string[] = [];
+  
+  try {
+    debug('Starting syncInitialEvents');
+    
+    const auth = new google.auth.OAuth2();
+    auth.setCredentials({ access_token: accessToken });
+    
+    const calendar = google.calendar({ version: 'v3', auth });
+    
+    // Get events from primary calendar for next 30 days
+    const now = new Date();
+    const thirtyDaysLater = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+    
+    debug('Fetching events from Google...');
+    const { data: events } = await calendar.events.list({
+      calendarId: 'primary',
+      timeMin: now.toISOString(),
+      timeMax: thirtyDaysLater.toISOString(),
+      singleEvents: true,
+      orderBy: 'startTime',
+    });
+
+    debug(`Retrieved ${events.items?.length || 0} events from Google`);
+
+    // Get the calendar ID we just created
+    const { data: calData, error: calError } = await supabase
+      .from('calendars')
+      .select('id')
+      .eq('user_id', USER_ID)
+      .eq('provider', 'google')
+      .single();
+
+    if (calError) {
+      console.error('Error finding calendar:', calError);
+      syncErrors.push(`Calendar lookup error: ${calError.message}`);
+      return;
+    }
+
+    if (!calData) {
+      console.error('Calendar not found after creation');
+      syncErrors.push('Calendar not found after creation');
+      return;
+    }
+
+    debug('Found calendar ID:', calData.id);
+
+    // Store events using correct schema
+    let successCount = 0;
+    let errorCount = 0;
+    
+    for (const event of events.items || []) {
+      try {
+        const { error: eventError } = await supabase.from('events').upsert({
+          calendar_id: calData.id,
+          user_id: USER_ID,
+          external_id: event.id,
+          title: event.summary || 'Untitled',
+          description: event.description,
+          location: event.location,
+          starts_at: event.start?.dateTime || event.start?.date,
+          ends_at: event.end?.dateTime || event.end?.date,
+          timezone: event.start?.timeZone || 'Europe/Oslo',
+          is_all_day: !event.start?.dateTime,
+          recurrence_rule: event.recurrence?.[0],
+          ical_uid: event.iCalUID,
+          etag: event.etag,
+          status: event.status === 'cancelled' ? 'cancelled' : 'confirmed',
+          sync_status: 'synced',
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'calendar_id,external_id'
+        });
+
+        if (eventError) {
+          console.error('Event upsert error:', eventError);
+          errorCount++;
+        } else {
+          successCount++;
+        }
+      } catch (e: any) {
+        console.error('Event sync error:', e);
+        errorCount++;
+      }
+    }
+
+    // Update last sync time
+    const { error: updateError } = await supabase
+      .from('calendars')
+      .update({ last_synced_at: new Date().toISOString() })
+      .eq('id', calData.id);
+
+    if (updateError) {
+      console.error('Error updating last_synced_at:', updateError);
+    }
+
+    debug(`Initial sync complete: ${successCount} success, ${errorCount} errors`);
+
+  } catch (error: any) {
+    console.error('Initial sync error:', error);
+    syncErrors.push(`Sync failed: ${error.message}`);
+  }
+}
+
+async function setupWebhook(userId: string) {
+  try {
+    debug('Calling webhook setup API...');
+    
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const response = await fetch(`${baseUrl}/api/calendar/webhook/setup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Webhook setup failed');
+    }
+
+    const result = await response.json();
+    debug('Webhook setup result:', result);
+  } catch (error: any) {
+    console.error('Webhook setup error:', error);
+    throw error;
+  }
+}
