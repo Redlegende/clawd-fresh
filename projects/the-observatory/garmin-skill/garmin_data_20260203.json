@@ -1,72 +1,65 @@
 [
   {
     "date": "2026-02-03",
-    "body_battery": 57,
+    "body_battery": null,
     "vo2_max": null,
-    "hrv": null,
     "sleep_score": null,
-    "sleep_hours": 7.67,
-    "resting_hr": 56,
-    "steps": 0
+    "sleep_hours": null,
+    "resting_hr": null,
+    "steps": null
   },
   {
     "date": "2026-02-02",
-    "body_battery": 73,
+    "body_battery": null,
     "vo2_max": null,
-    "hrv": null,
     "sleep_score": null,
-    "sleep_hours": 7.79,
-    "resting_hr": 53,
-    "steps": 0
+    "sleep_hours": null,
+    "resting_hr": null,
+    "steps": null
   },
   {
     "date": "2026-02-01",
-    "body_battery": 83,
+    "body_battery": null,
     "vo2_max": null,
-    "hrv": null,
     "sleep_score": null,
-    "sleep_hours": 7.82,
-    "resting_hr": 50,
-    "steps": 0
+    "sleep_hours": null,
+    "resting_hr": null,
+    "steps": null
   },
   {
     "date": "2026-01-31",
-    "body_battery": 62,
+    "body_battery": null,
     "vo2_max": null,
-    "hrv": null,
     "sleep_score": null,
-    "sleep_hours": 5.52,
-    "resting_hr": 53,
-    "steps": 303
+    "sleep_hours": null,
+    "resting_hr": null,
+    "steps": null
   },
   {
     "date": "2026-01-30",
-    "body_battery": 62,
+    "body_battery": null,
     "vo2_max": null,
-    "hrv": null,
     "sleep_score": null,
-    "sleep_hours": 6.92,
-    "resting_hr": 55,
-    "steps": 0
+    "sleep_hours": null,
+    "resting_hr": null,
+    "steps": null
   },
   {
     "date": "2026-01-29",
-    "body_battery": 58,
+    "body_battery": null,
     "vo2_max": null,
-    "hrv": null,
     "sleep_score": null,
-    "sleep_hours": 6.95,
-    "resting_hr": 55,
-    "steps": 0
+    "sleep_hours": null,
+    "resting_hr": null,
+    "steps": null
   },
   {
     "date": "2026-01-28",
-    "body_battery": 86,
+    "body_battery": null,
     "vo2_max": null,
-    "hrv": null,
     "sleep_score": null,
-    "sleep_hours": 8.52,
-    "resting_hr": 53,
-    "steps": 11
+    "sleep_hours": null,
+    "resting_hr": null,
+    "steps": null
   }
 ]

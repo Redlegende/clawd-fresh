@@ -40,6 +40,26 @@
     "prompt-optimizer": {
       "version": "1.0.0",
       "installedAt": 1770080433820
+    },
+    "ai-humanizer": {
+      "version": "2.1.0",
+      "installedAt": 1770166821684
+    },
+    "clawshot": {
+      "version": "2.2.2",
+      "installedAt": 1770166824953
+    },
+    "reposit": {
+      "version": "1.0.0",
+      "installedAt": 1770166826599
+    },
+    "progressive-memory": {
+      "version": "0.1.0",
+      "installedAt": 1770166827821
+    },
+    "prompts-workflow": {
+      "version": "1.0.0",
+      "installedAt": 1770166829580
     }
   }
 }

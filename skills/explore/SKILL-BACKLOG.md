@@ -94,8 +94,9 @@ Skills discovered from clawdhub that may enhance capabilities. Research up to 5 
 ### ai-humanizer v2.1.0
 - **Description:** Humanize AI-generated text by detecting and removing AI markers
 - **Relevance:** Content creation for YouTube scripts
-- **Status:** 📝 Pending
-- **Notes:** Jakob prefers authentic voice; may not align with values
+- **Status:** 🤔 MAYBE
+- **Verdict:** Comprehensive pattern detection (24 patterns, 500+ AI vocabulary terms, statistical analysis). CLI tools for scoring, analyzing, and humanizing text. Useful for making AI-generated content sound more natural. However, Jakob prefers authentic voice anyway — may not need a tool for this. Keep as option for bulk content processing but not priority.
+- **Location:** `skills/explore/ai-humanizer/`
 
 ### xmtp-cli v1.0.0
 - **Description:** Run and script the XMTP CLI for testing, debugging, and messaging
@@ -110,10 +111,11 @@ Skills discovered from clawdhub that may enhance capabilities. Research up to 5 
 - **Notes:** Overlap with xmtp-cli
 
 ### clawshot v1.2.0
-- **Description:** The visual network for AI agents. Capture, share, and explore screenshots
-- **Relevance:** Visual documentation, browser automation
-- **Status:** 📝 Pending
-- **Notes:** Browser tool already has screenshot capability
+- **Description:** "Instagram for AI agents" — social platform for sharing screenshots, building following, engaging with other agents
+- **Relevance:** Visual documentation, agent social presence
+- **Status:** ❌ SKIP
+- **Verdict:** Requires Twitter/X verification (human claims agent). Social platform focused — like Instagram for AI agents. Interesting concept but completely misaligned with Jakob's business goals (Kvitfjellhytter, 3dje Boligsektor). No value for cabin management or real estate development. Skip.
+- **Location:** `skills/explore/clawshot/` (will delete)
 
 ### vestaboard v1.0.0
 - **Description:** Read and write messages on a Vestaboard using the local network API
@@ -128,10 +130,11 @@ Skills discovered from clawdhub that may enhance capabilities. Research up to 5 
 - **Notes:** Entertainment, not business utility
 
 ### reposit v1.0.0
-- **Description:** Community knowledge sharing for AI agents - search agent memories
-- **Relevance:** Knowledge sharing between agents
-- **Status:** 📝 Pending
-- **Notes:** Unclear value vs private memory system
+- **Description:** Community knowledge base for AI agents — search solutions, share fixes, vote on quality
+- **Relevance:** Error solving, pattern sharing
+- **Status:** 🤔 MAYBE
+- **Verdict:** MCP server that searches community solutions before reinventing. Search works without auth; sharing requires login. Could help with common errors (npm issues, API quirks). However, overlaps with existing memory_search + Google. Value unclear for Jakob's specific stack. Defer until hitting recurring errors that community could solve.
+- **Location:** `skills/explore/reposit/`
 
 ### feishu-api-docs v1.0.0
 - **Description:** Fetches Feishu (Lark) API documentation from the official website
@@ -158,10 +161,11 @@ Skills discovered from clawdhub that may enhance capabilities. Research up to 5 
 - **Notes:** Similar to http_request tool already available
 
 ### prompts-workflow v1.0.0
-- **Description:** Automated workflow for collecting, converting, and uploading prompts
-- **Relevance:** Prompt management
-- **Status:** 📝 Pending
-- **Notes:** Unclear advantage over simple file storage
+- **Description:** Automated workflow for collecting prompts (Reddit, GitHub, HN, SearXNG), converting to Clawdbot Skills, publishing to ClawdHub
+- **Relevance:** Prompt curation, ClawdHub publishing
+- **Status:** ❌ SKIP
+- **Verdict:** Chinese-language focused skill for bulk prompt collection and publishing. Designed for prompt curators who publish to ClawdHub marketplace. Jakob is a skill consumer, not a publisher. No relevance to cabin management or real estate work. Skip.
+- **Location:** `skills/explore/prompts-workflow/` (will delete)
 
 ### warren-nft v1.0.0
 - **Description:** Deploy NFT collections permanently on MegaETH blockchain
@@ -194,10 +198,11 @@ Skills discovered from clawdhub that may enhance capabilities. Research up to 5 
 - **Notes:** No China-focused projects
 
 ### progressive-memory v0.1.0
-- **Description:** (No description provided)
-- **Relevance:** Unknown
-- **Status:** 📝 Pending
-- **Notes:** Need to read SKILL.md to understand
+- **Description:** Token-efficient memory system with progressive disclosure — index-first, fetch details on demand
+- **Relevance:** Memory optimization
+- **Status:** ❌ SKIP
+- **Verdict:** Just a markdown formatting convention (index tables + detail sections), not a functional tool. Pattern is useful (scan 100 tokens vs 3500) but can adopt format without installing skill. Already have byterover for knowledge management. No code to execute — just documentation. Skip.
+- **Location:** `skills/explore/progressive-memory/` (will delete)
 
 ---
 
@@ -216,6 +221,7 @@ Skills discovered from clawdhub that may enhance capabilities. Research up to 5 
 |------|-------------------|----------|
 | 2026-02-02 | google-calendar, clawmail-skill, google-sheet, agent-builder, docstrange | 2 INSTALL, 2 MAYBE, 1 SKIP |
 | 2026-02-03 | meta-tags, hybrid-memory, computer-use, prompt-optimizer, capability-evolver | 1 INSTALL, 1 MAYBE, 2 SKIP, 1 NOT FOUND |
+| 2026-02-04 | ai-humanizer, clawshot, reposit, progressive-memory, prompts-workflow | 2 MAYBE, 3 SKIP |
 
 ---
 
