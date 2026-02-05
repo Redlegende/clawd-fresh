@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { MessageSquare, Send, Trash2, User, Bot, ArrowLeft, ArrowRight, AlertCircle } from 'lucide-react'
+import { MessageSquare, Send, Trash2, User, Bot, ArrowLeft, ArrowRight, AlertCircle, Calendar } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
@@ -231,6 +232,37 @@ export function TaskDetailModal({
     }
   }
 
+  const updateDueDate = async (newDueDate: string) => {
+    if (!task || updating) return
+    
+    setUpdating(true)
+    try {
+      const dueDateValue = newDueDate || null
+      
+      const { error } = await supabase
+        .from('tasks')
+        .update({ 
+          due_date: dueDateValue, 
+          updated_at: new Date().toISOString() 
+        })
+        .eq('id', task.id)
+
+      if (error) throw error
+
+      if (onTaskUpdated) {
+        onTaskUpdated({ ...task, due_date: dueDateValue || undefined })
+      }
+    } catch (error) {
+      console.error('Failed to update due date:', error)
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  const clearDueDate = async () => {
+    await updateDueDate('')
+  }
+
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr)
     const now = new Date()
@@ -362,13 +394,39 @@ export function TaskDetailModal({
           </div>
         )}
 
-        {/* Due Date Warning */}
-        {task.due_date && new Date(task.due_date) < new Date() && task.status !== 'done' && (
-          <div className="flex items-center gap-2 text-sm text-red-400 bg-red-500/10 p-2 rounded">
-            <AlertCircle className="h-4 w-4" />
-            Overdue: {new Date(task.due_date).toLocaleDateString('no-NO')}
+        {/* Due Date Editor */}
+        <div className="flex items-center gap-3 bg-muted/30 p-3 rounded-lg">
+          <Calendar className="h-4 w-4 text-muted-foreground" />
+          <div className="flex-1">
+            <label className="text-sm text-muted-foreground block mb-1">Due Date</label>
+            <div className="flex items-center gap-2">
+              <Input
+                type="date"
+                value={task.due_date || ''}
+                onChange={(e) => updateDueDate(e.target.value)}
+                disabled={updating}
+                className="w-auto h-8 text-sm"
+              />
+              {task.due_date && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearDueDate}
+                  disabled={updating}
+                  className="h-8 px-2 text-muted-foreground hover:text-red-400"
+                >
+                  Clear
+                </Button>
+              )}
+            </div>
           </div>
-        )}
+          {task.due_date && new Date(task.due_date) < new Date() && task.status !== 'done' && (
+            <div className="flex items-center gap-1 text-sm text-red-400">
+              <AlertCircle className="h-4 w-4" />
+              Overdue
+            </div>
+          )}
+        </div>
 
         {/* Comments Section */}
         <div className="flex-1 min-h-0 flex flex-col">
