@@ -3,7 +3,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { MessageSquare, Send, Trash2, User, Bot } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
 
@@ -225,7 +224,7 @@ export function TaskDetailModal({
             Comments & Context
           </h4>
 
-          <ScrollArea className="flex-1 max-h-[300px] pr-4">
+          <div className="flex-1 max-h-[300px] overflow-y-auto pr-4">
             {loading ? (
               <p className="text-sm text-muted-foreground text-center py-4">
                 Loading comments...
@@ -279,7 +278,7 @@ export function TaskDetailModal({
                 ))}
               </div>
             )}
-          </ScrollArea>
+          </div>
 
           {/* Add Comment */}
           <div className="mt-4 flex gap-2">
