@@ -17,7 +17,7 @@ export type Task = {
   id: string
   title: string
   description?: string
-  status: 'backlog' | 'todo' | 'in_progress' | 'review' | 'done'
+  status: 'backlog' | 'todo' | 'in_progress' | 'review' | 'done' | 'archived'
   priority: 'low' | 'medium' | 'high' | 'urgent'
   project_id?: string
   due_date?: string

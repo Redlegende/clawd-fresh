@@ -27,7 +27,7 @@ interface Task {
   id: string
   title: string
   description?: string
-  status: 'backlog' | 'todo' | 'in_progress' | 'review' | 'done'
+  status: 'backlog' | 'todo' | 'in_progress' | 'review' | 'done' | 'archived'
   priority: 'low' | 'medium' | 'high' | 'urgent'
   project_id?: string
   due_date?: string
@@ -47,12 +47,13 @@ interface TaskDetailModalProps {
 
 const STATUS_FLOW: Task['status'][] = ['backlog', 'todo', 'in_progress', 'review', 'done']
 
-const STATUS_LABELS: Record<Task['status'], string> = {
+const STATUS_LABELS: Record<string, string> = {
   backlog: 'Backlog',
   todo: 'To Do',
   in_progress: 'In Progress',
   review: 'Review',
-  done: 'Done'
+  done: 'Done',
+  archived: 'Trash'
 }
 
 export function TaskDetailModal({ 
@@ -522,6 +523,45 @@ export function TaskDetailModal({
               )}
             </Button>
           </div>
+        </div>
+
+        {/* Trash Action */}
+        <div className="border-t pt-4 mt-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={async () => {
+              if (!task || updating) return
+              if (!confirm('Move this task to trash? You can restore it later.')) return
+              
+              setUpdating(true)
+              try {
+                const { error } = await supabase
+                  .from('tasks')
+                  .update({ 
+                    status: 'archived', 
+                    updated_at: new Date().toISOString() 
+                  })
+                  .eq('id', task.id)
+
+                if (error) throw error
+
+                if (onTaskUpdated) {
+                  onTaskUpdated({ ...task, status: 'archived' })
+                }
+                onOpenChange(false)
+              } catch (error) {
+                console.error('Failed to archive task:', error)
+              } finally {
+                setUpdating(false)
+              }
+            }}
+            disabled={updating}
+            className="text-muted-foreground hover:text-red-400 hover:bg-red-500/10"
+          >
+            <Trash2 className="h-4 w-4 mr-1" />
+            Move to Trash
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { LayoutGrid, CheckCircle2, Plus, Filter, AlertCircle, Clock } from 'lucide-react'
+import { LayoutGrid, CheckCircle2, Plus, Filter, AlertCircle, Clock, Trash2 } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
 import { TaskModal } from '@/components/kanban/TaskModal'
 import { KanbanBoard, Task } from '@/components/kanban/KanbanBoard'
@@ -31,6 +31,7 @@ export default function KanbanPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [showCompleted, setShowCompleted] = useState(false)
+  const [showTrash, setShowTrash] = useState(false)
   const [showTaskModal, setShowTaskModal] = useState(false)
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
@@ -40,7 +41,7 @@ export default function KanbanPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        // Fetch all tasks with comment counts
+        // Fetch all tasks with comment counts (including archived for trash view)
         const { data: taskData, error: tasksError } = await supabase
           .from('tasks')
           .select(`
@@ -73,6 +74,27 @@ export default function KanbanPage() {
     }
 
     fetchData()
+  }, [])
+
+  // Refresh tasks when modal closes (to get updates)
+  const handleModalClose = useCallback((open: boolean) => {
+    if (!open) {
+      // Refresh data to ensure we have latest state
+      const fetchData = async () => {
+        const { data: taskData } = await supabase
+          .from('tasks')
+          .select(`*, task_comments(count)`)
+          .order('created_at', { ascending: false })
+        
+        const tasksWithCounts = (taskData || []).map((task: any) => ({
+          ...task,
+          comment_count: task.task_comments?.[0]?.count || 0
+        }))
+        setTasks(tasksWithCounts)
+      }
+      fetchData()
+    }
+    setShowTaskModal(open)
   }, [])
 
   const handleTaskCreated = useCallback((newTask: Task) => {
@@ -140,6 +162,15 @@ export default function KanbanPage() {
   const filteredTasks = useMemo(() => {
     let result = tasks
     
+    // Filter by archived/trash status
+    if (showTrash) {
+      // Only show archived tasks
+      result = result.filter(t => t.status === 'archived')
+    } else {
+      // Hide archived tasks from normal view
+      result = result.filter(t => t.status !== 'archived')
+    }
+    
     if (priorityFilter !== 'all') {
       result = result.filter(t => t.priority === priorityFilter)
     }
@@ -180,7 +211,7 @@ export default function KanbanPage() {
     })
     
     return result
-  }, [tasks, priorityFilter, categoryFilter, sortBy, projectMap])
+  }, [tasks, priorityFilter, categoryFilter, sortBy, projectMap, showTrash])
 
   const activeTasks = filteredTasks.filter(t => t.status !== 'done').length
   const doneTasks = filteredTasks.filter(t => t.status === 'done').length
@@ -213,6 +244,15 @@ export default function KanbanPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setShowTrash(!showTrash)}
+            className={showTrash ? 'bg-red-50 dark:bg-red-950 text-red-400' : ''}
+          >
+            <Trash2 className="h-4 w-4 mr-1" />
+            {showTrash ? 'Hide' : 'Show'} Trash
+          </Button>
           <Button 
             variant="outline" 
             size="sm"
@@ -291,7 +331,7 @@ export default function KanbanPage() {
 
       <TaskModal
         open={showTaskModal}
-        onOpenChange={setShowTaskModal}
+        onOpenChange={handleModalClose}
         projects={projects}
         onTaskCreated={handleTaskCreated}
       />
