@@ -1,49 +1,63 @@
-# Observatory Task Sync Skill
+# Observatory Sync Skill
 
-Skill for Fred to interact with The Observatory Kanban system via API.
+Two-way sync between Fred and The Observatory task system.
 
-## Purpose
+## What This Does
 
-Two-way sync between The Observatory Kanban and Fred:
-1. **Inbound:** Get notified when Jakob marks tasks done
-2. **Outbound:** Fred can mark tasks done via API
+- **Fred → Supabase**: I can read, update, and comment on tasks directly
+- **You → Kanban**: You can add comments on tasks via the Kanban board
+- **Two-way comments**: Both of us can see all comments for context
 
-## API Endpoints
+## CLI Tools
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/api/fred/notifications` | GET | Check unread notifications |
-| `/api/fred/notifications?action=mark_read` | POST | Mark notification as read |
-| `/api/fred/tasks` | GET | Get tasks list |
-| `/api/fred/tasks/[id]/complete` | POST | Mark task as done |
-
-## Environment
-
+### List Tasks
 ```bash
-OBSERVATORY_URL=https://the-observatory-2k8lny34s-redlegendes-projects.vercel.app
-# No auth needed (temporarily) - add API key later
+observatory-tasks.sh                    # All active tasks
+observatory-tasks.sh -u                 # Urgent only
+observatory-tasks.sh -s todo            # Filter by status
+observatory-tasks.sh -p high            # Filter by priority
+observatory-tasks.sh -o                 # Overdue tasks
 ```
 
-## Usage Examples
-
-### Check my notifications
+### Complete a Task
 ```bash
-observatory-notifications
+observatory-complete-task.sh abc123
+observatory-complete-task.sh abc123 -c "Deployed to prod"
 ```
 
-### Mark a task done
+### Add Comment
 ```bash
-observatory-complete-task <task-id> [notes]
+observatory-comment.sh abc123 "Waiting for Henrik's reply"
+observatory-comment.sh abc123 "Internal note" -i
 ```
 
-### Get urgent tasks
+### Check Notifications
 ```bash
-observatory-tasks --priority urgent
+observatory-notifications.sh            # Show unread
+observatory-notifications.sh -r         # Show and mark read
+observatory-notifications.sh -a         # Show all
+observatory-notifications.sh -c         # Clear all
 ```
 
-## Integration
+## Database Schema
 
-Add to daily cron:
-- Check notifications every morning
-- Report completed tasks from yesterday
-- Alert on urgent new tasks
+### task_comments
+- `id` - UUID
+- `task_id` - Reference to tasks
+- `author` - 'jakob' or 'fred'
+- `content` - Comment text
+- `is_internal_note` - For Fred's private notes
+- `created_at` / `updated_at` - Timestamps
+
+## API Routes
+
+- `GET /api/tasks/[id]/comments` - List comments
+- `POST /api/tasks/[id]/comments` - Add comment
+- `DELETE /api/tasks/[id]/comments?comment_id=x` - Delete comment
+
+## Kanban UI
+
+- Click any task card to open detail view
+- See all comments in the modal
+- Add new comments at the bottom
+- Comment count shown on task cards

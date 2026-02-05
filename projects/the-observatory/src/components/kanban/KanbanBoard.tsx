@@ -5,7 +5,9 @@ import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
+import { MessageSquare } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
+import { TaskDetailModal } from './TaskDetailModal'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
@@ -20,6 +22,7 @@ export type Task = {
   project_id?: string
   due_date?: string
   tags?: string[]
+  comment_count?: number
   created_at: string
   updated_at: string
 }
@@ -62,16 +65,16 @@ interface TaskCardProps {
   task: Task
   projectMap: Map<string, string>
   onStatusChange: (task: Task, newStatus: Task['status']) => Promise<void>
+  onTaskClick: (task: Task) => void
   index: number
 }
 
-function TaskCard({ task, projectMap, onStatusChange, index }: TaskCardProps) {
-  const handleToggle = async () => {
+function TaskCard({ task, projectMap, onStatusChange, onTaskClick, index }: TaskCardProps) {
+  const handleToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation()
     if (task.status === 'done') {
-      // Uncheck - move back to todo
       await onStatusChange(task, 'todo')
     } else {
-      // Check - mark as done
       await onStatusChange(task, 'done')
     }
   }
@@ -85,14 +88,16 @@ function TaskCard({ task, projectMap, onStatusChange, index }: TaskCardProps) {
           {...provided.dragHandleProps}
           className={`mb-2 ${snapshot.isDragging ? 'rotate-2 scale-105' : ''}`}
         >
-          <Card className={`cursor-grab active:cursor-grabbing transition-all ${
-            snapshot.isDragging 
-              ? 'shadow-[0_0_30px_rgba(136,85,255,0.4)] ring-2 ring-purple-500/50 rotate-2 scale-105' 
-              : 'hover:shadow-[0_0_20px_rgba(0,255,255,0.15)] hover:border-cyan-500/30'
-          } bg-[#12121a] border-[#1a1a25]`}>
+          <Card 
+            onClick={() => onTaskClick(task)}
+            className={`cursor-pointer transition-all ${
+              snapshot.isDragging 
+                ? 'shadow-[0_0_30px_rgba(136,85,255,0.4)] ring-2 ring-purple-500/50 rotate-2 scale-105' 
+                : 'hover:shadow-[0_0_20px_rgba(0,255,255,0.15)] hover:border-cyan-500/30'
+            } bg-[#12121a] border-[#1a1a25]`}>
             <CardContent className="p-3">
               <div className="flex items-start gap-2">
-                <div className="pt-0.5">
+                <div className="pt-0.5" onClick={(e) => e.stopPropagation()}>
                   <Checkbox 
                     checked={task.status === 'done'}
                     onCheckedChange={handleToggle}
@@ -112,14 +117,23 @@ function TaskCard({ task, projectMap, onStatusChange, index }: TaskCardProps) {
                   )}
 
                   <div className="flex items-center justify-between gap-2">
-                    <span className={`text-xs px-2 py-0.5 rounded ${getPriorityColor(task.priority)}`}>
-                      {task.priority}
-                    </span>
-
-                    {task.project_id && projectMap.get(task.project_id) && (
-                      <span className="text-xs text-muted-foreground truncate max-w-[80px]">
-                        {projectMap.get(task.project_id)}
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs px-2 py-0.5 rounded ${getPriorityColor(task.priority)}`}>
+                        {task.priority}
                       </span>
+
+                      {task.project_id && projectMap.get(task.project_id) && (
+                        <span className="text-xs text-muted-foreground truncate max-w-[80px]">
+                          {projectMap.get(task.project_id)}
+                        </span>
+                      )}
+                    </div>
+
+                    {(task.comment_count || 0) > 0 && (
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <MessageSquare className="h-3 w-3" />
+                        <span className="text-xs">{task.comment_count}</span>
+                      </div>
                     )}
                   </div>
 
@@ -164,13 +178,6 @@ function TaskCard({ task, projectMap, onStatusChange, index }: TaskCardProps) {
   )
 }
 
-interface KanbanColumnProps {
-  column: Column
-  tasks: Task[]
-  projectMap: Map<string, string>
-  onStatusChange: (task: Task, newStatus: Task['status']) => Promise<void>
-}
-
 function StrictModeDroppable({ children, ...props }: React.ComponentProps<typeof Droppable>) {
   const [enabled, setEnabled] = useState(false)
 
@@ -189,7 +196,15 @@ function StrictModeDroppable({ children, ...props }: React.ComponentProps<typeof
   return <Droppable {...props}>{children}</Droppable>
 }
 
-function KanbanColumn({ column, tasks, projectMap, onStatusChange }: KanbanColumnProps) {
+interface KanbanColumnProps {
+  column: Column
+  tasks: Task[]
+  projectMap: Map<string, string>
+  onStatusChange: (task: Task, newStatus: Task['status']) => Promise<void>
+  onTaskClick: (task: Task) => void
+}
+
+function KanbanColumn({ column, tasks, projectMap, onStatusChange, onTaskClick }: KanbanColumnProps) {
   return (
     <div className={`w-72 lg:w-80 flex-shrink-0 rounded-lg border ${getColumnColor(column.id)}`}>
       <div className="p-3 border-b border-inherit">
@@ -215,6 +230,7 @@ function KanbanColumn({ column, tasks, projectMap, onStatusChange }: KanbanColum
                 task={task}
                 projectMap={projectMap}
                 onStatusChange={onStatusChange}
+                onTaskClick={onTaskClick}
                 index={index}
               />
             ))}
@@ -247,6 +263,21 @@ export function KanbanBoard({
   onTasksChange,
   onStatusChange 
 }: KanbanBoardProps) {
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null)
+  const [detailModalOpen, setDetailModalOpen] = useState(false)
+
+  const handleTaskClick = (task: Task) => {
+    setSelectedTask(task)
+    setDetailModalOpen(true)
+  }
+
+  const handleTaskUpdated = (updatedTask: Task) => {
+    const updatedTasks = tasks.map(t => 
+      t.id === updatedTask.id ? { ...t, comment_count: updatedTask.comment_count } : t
+    )
+    onTasksChange(updatedTasks)
+    setSelectedTask(updatedTask)
+  }
   
   const handleDragEnd = useCallback(async (result: DropResult) => {
     const { destination, source, draggableId } = result
@@ -339,34 +370,46 @@ export function KanbanBoard({
     : columns.filter(col => col.id !== 'done')
 
   return (
-    <div className="relative">
-      <DragDropContext onDragEnd={handleDragEnd}>
-        {/* Desktop: Horizontal scroll */}
-        <div className="hidden lg:flex gap-4 overflow-x-auto pb-4">
-          {visibleColumns.map((column) => (
-            <KanbanColumn
-              key={column.id}
-              column={column}
-              tasks={tasksByColumn[column.id] || []}
-              projectMap={projectMap}
-              onStatusChange={onStatusChange}
-            />
-          ))}
-        </div>
+    <>
+      <div className="relative">
+        <DragDropContext onDragEnd={handleDragEnd}>
+          {/* Desktop: Horizontal scroll */}
+          <div className="hidden lg:flex gap-4 overflow-x-auto pb-4">
+            {visibleColumns.map((column) => (
+              <KanbanColumn
+                key={column.id}
+                column={column}
+                tasks={tasksByColumn[column.id] || []}
+                projectMap={projectMap}
+                onStatusChange={onStatusChange}
+                onTaskClick={handleTaskClick}
+              />
+            ))}
+          </div>
 
-        {/* Mobile: Stacked */}
-        <div className="lg:hidden space-y-4">
-          {visibleColumns.map((column) => (
-            <KanbanColumn
-              key={column.id}
-              column={column}
-              tasks={tasksByColumn[column.id] || []}
-              projectMap={projectMap}
-              onStatusChange={onStatusChange}
-            />
-          ))}
-        </div>
-      </DragDropContext>
-    </div>
+          {/* Mobile: Stacked */}
+          <div className="lg:hidden space-y-4">
+            {visibleColumns.map((column) => (
+              <KanbanColumn
+                key={column.id}
+                column={column}
+                tasks={tasksByColumn[column.id] || []}
+                projectMap={projectMap}
+                onStatusChange={onStatusChange}
+                onTaskClick={handleTaskClick}
+              />
+            ))}
+          </div>
+        </DragDropContext>
+      </div>
+
+      <TaskDetailModal
+        task={selectedTask}
+        projectName={selectedTask ? projectMap.get(selectedTask.project_id || '') : undefined}
+        open={detailModalOpen}
+        onOpenChange={setDetailModalOpen}
+        onTaskUpdated={handleTaskUpdated}
+      />
+    </>
   )
 }

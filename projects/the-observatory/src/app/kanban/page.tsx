@@ -34,13 +34,22 @@ export default function KanbanPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        // Fetch all tasks (including done for the Done column)
+        // Fetch all tasks with comment counts
         const { data: taskData, error: tasksError } = await supabase
           .from('tasks')
-          .select('*')
+          .select(`
+            *,
+            task_comments(count)
+          `)
           .order('created_at', { ascending: false })
 
         if (tasksError) throw tasksError
+
+        // Transform to include comment_count
+        const tasksWithCounts = (taskData || []).map((task: any) => ({
+          ...task,
+          comment_count: task.task_comments?.[0]?.count || 0
+        }))
 
         const { data: projectData, error: projectsError } = await supabase
           .from('projects')
@@ -48,7 +57,7 @@ export default function KanbanPage() {
 
         if (projectsError) throw projectsError
 
-        setTasks(taskData || [])
+        setTasks(tasksWithCounts)
         setProjects(projectData || [])
       } catch (error) {
         console.error('Error fetching kanban data:', error)
