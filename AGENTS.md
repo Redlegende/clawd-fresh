@@ -20,6 +20,24 @@ Before replying to the user, you MUST read these files in this order:
 
 ---
 
+## 🔄 ALWAYS CLOSE LOOPS (CRITICAL)
+
+**What this means:** When work is done, it's NOT done until files are updated.
+
+**The rule:**
+- Code written → PROJECTS.md updated
+- Task completed → TODO.md moved to DONE
+- Lesson learned → MEMORY.md updated
+- Bug fixed → FAILURE_LOG.md updated
+- Decision made → decisions.md updated
+
+**Never say:** "I'll update the files later" → Do it NOW.
+**Never say:** "Should I update the files?" → You should have already done it.
+
+**The test:** If Jakob left now, would the files reflect reality? If not, the loop is open. CLOSE IT.
+
+---
+
 ## Territory Map
 
 **Quick reference of workspace structure.**
