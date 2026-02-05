@@ -15,7 +15,6 @@ Before replying to the user, you MUST read these files in this order:
 5. **`MEMORY.md`** — Long-term curated memories
 6. **`WORKFLOW.md`** — How to track progress and update files automatically
 7. **`ORGANIZATION.md`** — Where files live (project structure rules)
-7. **`ORGANIZATION.md`** — Where files live (project structure rules)
 
 **Why this matters:** You wake up fresh every session. These files ARE your memory. Skip them = amnesia.
 
@@ -40,8 +39,6 @@ Before replying to the user, you MUST read these files in this order:
 - `memory/` — Daily notes (YYYY-MM-DD.md)
 - `skills/` — Custom skills
 - `hours/` — Hour tracking system (Fåvang Varetaxi + Treffen)
-- `research/` — Research archives
-- `hours/` — Hour tracking system
 - `research/` — Research archives
 
 ## Memory System
