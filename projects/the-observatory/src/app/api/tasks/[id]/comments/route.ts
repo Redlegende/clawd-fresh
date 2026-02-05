@@ -12,10 +12,10 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const taskId = params.id
+    const { id: taskId } = await params
 
     // Verify task exists
     const { data: task, error: taskError } = await supabase
@@ -62,10 +62,10 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const taskId = params.id
+    const { id: taskId } = await params
     const body = await request.json()
     const { content, author = 'jakob', is_internal_note = false } = body
 
@@ -149,10 +149,10 @@ export async function POST(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const taskId = params.id
+    const { id: taskId } = await params
     const { searchParams } = new URL(request.url)
     const commentId = searchParams.get('comment_id')
 

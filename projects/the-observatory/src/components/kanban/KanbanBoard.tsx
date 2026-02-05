@@ -70,8 +70,7 @@ interface TaskCardProps {
 }
 
 function TaskCard({ task, projectMap, onStatusChange, onTaskClick, index }: TaskCardProps) {
-  const handleToggle = async (e: React.MouseEvent) => {
-    e.stopPropagation()
+  const handleToggle = async () => {
     if (task.status === 'done') {
       await onStatusChange(task, 'todo')
     } else {
