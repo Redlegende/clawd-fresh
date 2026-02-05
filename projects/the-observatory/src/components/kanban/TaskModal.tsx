@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -32,7 +32,7 @@ export function TaskModal({ open, onOpenChange, projects, onTaskCreated }: TaskM
     description: '',
     priority: 'medium',
     status: 'todo',
-    project_id: '',
+    project_id: 'none',
     due_date: ''
   })
 
@@ -49,7 +49,7 @@ export function TaskModal({ open, onOpenChange, projects, onTaskCreated }: TaskM
           description: formData.description.trim() || null,
           priority: formData.priority,
           status: formData.status,
-          project_id: formData.project_id || null,
+          project_id: formData.project_id === 'none' ? null : formData.project_id || null,
           due_date: formData.due_date || null,
           source: 'manual',
           created_at: new Date().toISOString(),
@@ -66,7 +66,7 @@ export function TaskModal({ open, onOpenChange, projects, onTaskCreated }: TaskM
         description: '',
         priority: 'medium',
         status: 'todo',
-        project_id: '',
+        project_id: 'none',
         due_date: ''
       })
       onOpenChange(false)
@@ -81,6 +81,9 @@ export function TaskModal({ open, onOpenChange, projects, onTaskCreated }: TaskM
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
+          <DialogDescription className="sr-only">
+            Create a new task with title, description, priority, status, and project
+          </DialogDescription>
           <DialogTitle>Create New Task</DialogTitle>
         </DialogHeader>
         
@@ -156,7 +159,7 @@ export function TaskModal({ open, onOpenChange, projects, onTaskCreated }: TaskM
                   <SelectValue placeholder="Select project" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No project</SelectItem>
+                  <SelectItem value="none">No project</SelectItem>
                   {projects.map((project) => (
                     <SelectItem key={project.id} value={project.id}>
                       {project.name}

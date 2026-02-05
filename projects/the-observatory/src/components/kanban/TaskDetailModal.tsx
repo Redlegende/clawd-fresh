@@ -1,10 +1,13 @@
+'use client'
+
 import { useState, useEffect } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { MessageSquare, Send, Trash2, User, Bot } from 'lucide-react'
+import { MessageSquare, Send, Trash2, User, Bot, ArrowLeft, ArrowRight, AlertCircle } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
@@ -41,6 +44,16 @@ interface TaskDetailModalProps {
   onTaskUpdated?: (task: Task) => void
 }
 
+const STATUS_FLOW: Task['status'][] = ['backlog', 'todo', 'in_progress', 'review', 'done']
+
+const STATUS_LABELS: Record<Task['status'], string> = {
+  backlog: 'Backlog',
+  todo: 'To Do',
+  in_progress: 'In Progress',
+  review: 'Review',
+  done: 'Done'
+}
+
 export function TaskDetailModal({ 
   task, 
   projectName,
@@ -52,6 +65,7 @@ export function TaskDetailModal({
   const [newComment, setNewComment] = useState('')
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [updating, setUpdating] = useState(false)
 
   // Fetch comments when task changes
   useEffect(() => {
@@ -136,6 +150,87 @@ export function TaskDetailModal({
     }
   }
 
+  const updatePriority = async (newPriority: Task['priority']) => {
+    if (!task || updating) return
+    
+    setUpdating(true)
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .update({ priority: newPriority, updated_at: new Date().toISOString() })
+        .eq('id', task.id)
+
+      if (error) throw error
+
+      if (onTaskUpdated) {
+        onTaskUpdated({ ...task, priority: newPriority })
+      }
+    } catch (error) {
+      console.error('Failed to update priority:', error)
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  const moveStatus = async (direction: 'prev' | 'next') => {
+    if (!task || updating) return
+    
+    const currentIndex = STATUS_FLOW.indexOf(task.status)
+    const newIndex = direction === 'next' 
+      ? Math.min(currentIndex + 1, STATUS_FLOW.length - 1)
+      : Math.max(currentIndex - 1, 0)
+    
+    if (newIndex === currentIndex) return
+    
+    const newStatus = STATUS_FLOW[newIndex]
+    
+    setUpdating(true)
+    try {
+      const updateData: any = {
+        status: newStatus,
+        updated_at: new Date().toISOString()
+      }
+      
+      if (newStatus === 'done') {
+        updateData.completed_at = new Date().toISOString()
+      } else if (task.status === 'done') {
+        updateData.completed_at = null
+      }
+
+      const { error } = await supabase
+        .from('tasks')
+        .update(updateData)
+        .eq('id', task.id)
+
+      if (error) throw error
+
+      if (onTaskUpdated) {
+        onTaskUpdated({ ...task, status: newStatus })
+      }
+
+      // Send webhook
+      await fetch('/api/webhooks/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event: newStatus === 'done' ? 'task.completed' : 'task.updated',
+          timestamp: new Date().toISOString(),
+          task: {
+            id: task.id,
+            title: task.title,
+            status: newStatus,
+            previous_status: task.status
+          }
+        })
+      })
+
+    } catch (error) {
+      console.error('Failed to update status:', error)
+    } finally {
+      setUpdating(false)
+    }
+  }
+
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr)
     const now = new Date()
@@ -170,10 +265,17 @@ export function TaskDetailModal({
 
   if (!task) return null
 
+  const currentStatusIndex = STATUS_FLOW.indexOf(task.status)
+  const canMovePrev = currentStatusIndex > 0
+  const canMoveNext = currentStatusIndex < STATUS_FLOW.length - 1
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col">
         <DialogHeader>
+          <DialogDescription className="sr-only">
+            Task details and comments for {task.title}
+          </DialogDescription>
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <DialogTitle className="text-lg font-semibold mb-2">
@@ -181,12 +283,27 @@ export function TaskDetailModal({
               </DialogTitle>
               
               <div className="flex flex-wrap items-center gap-2">
-                <Badge className={getPriorityColor(task.priority)}>
-                  {task.priority}
-                </Badge>
+                {/* Priority Selector */}
+                <Select
+                  value={task.priority}
+                  onValueChange={(v) => updatePriority(v as Task['priority'])}
+                  disabled={updating}
+                >
+                  <SelectTrigger className={`w-[120px] h-7 text-xs ${getPriorityColor(task.priority)}`}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="urgent">🔴 Urgent</SelectItem>
+                    <SelectItem value="high">🟠 High</SelectItem>
+                    <SelectItem value="medium">🟡 Medium</SelectItem>
+                    <SelectItem value="low">🟢 Low</SelectItem>
+                  </SelectContent>
+                </Select>
+
                 <Badge className={getStatusColor(task.status)}>
-                  {task.status.replace('_', ' ')}
+                  {STATUS_LABELS[task.status]}
                 </Badge>
+                
                 {projectName && (
                   <Badge variant="outline">{projectName}</Badge>
                 )}
@@ -200,6 +317,44 @@ export function TaskDetailModal({
           </div>
         </DialogHeader>
 
+        {/* Status Navigation */}
+        <div className="flex items-center justify-between bg-muted/30 p-3 rounded-lg">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => moveStatus('prev')}
+            disabled={!canMovePrev || updating}
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            {canMovePrev ? STATUS_LABELS[STATUS_FLOW[currentStatusIndex - 1]] : 'Start'}
+          </Button>
+          
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            {STATUS_FLOW.map((s, i) => (
+              <div
+                key={s}
+                className={`w-2 h-2 rounded-full ${
+                  i === currentStatusIndex 
+                    ? 'bg-cyan-400' 
+                    : i < currentStatusIndex 
+                      ? 'bg-green-400' 
+                      : 'bg-gray-600'
+                }`}
+              />
+            ))}
+          </div>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => moveStatus('next')}
+            disabled={!canMoveNext || updating}
+          >
+            {canMoveNext ? STATUS_LABELS[STATUS_FLOW[currentStatusIndex + 1]] : 'Done'}
+            <ArrowRight className="h-4 w-4 ml-1" />
+          </Button>
+        </div>
+
         {/* Task Description */}
         {task.description && (
           <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
@@ -207,13 +362,11 @@ export function TaskDetailModal({
           </div>
         )}
 
-        {/* Due Date */}
-        {task.due_date && (
-          <div className="text-sm">
-            <span className="text-muted-foreground">Due: </span>
-            <span className={new Date(task.due_date) < new Date() ? 'text-red-400' : ''}>
-              {new Date(task.due_date).toLocaleDateString('no-NO')}
-            </span>
+        {/* Due Date Warning */}
+        {task.due_date && new Date(task.due_date) < new Date() && task.status !== 'done' && (
+          <div className="flex items-center gap-2 text-sm text-red-400 bg-red-500/10 p-2 rounded">
+            <AlertCircle className="h-4 w-4" />
+            Overdue: {new Date(task.due_date).toLocaleDateString('no-NO')}
           </div>
         )}
 
