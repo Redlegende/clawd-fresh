@@ -1,243 +1,34 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { LayoutGrid, CheckCircle2 } from 'lucide-react'
+import { Badge } from "@/components/ui/badge"
+import { LayoutGrid, CheckCircle2, Plus, Filter, AlertCircle, Clock } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
+import { TaskModal } from '@/components/kanban/TaskModal'
+import { KanbanBoard, Task } from '@/components/kanban/KanbanBoard'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-const columns = [
-  { id: 'backlog', title: 'Backlog', color: 'bg-slate-100 dark:bg-slate-800', shortTitle: 'Backlog' },
-  { id: 'todo', title: 'To Do', color: 'bg-blue-50 dark:bg-blue-950/30', shortTitle: 'To Do' },
-  { id: 'in_progress', title: 'In Progress', color: 'bg-amber-50 dark:bg-amber-950/30', shortTitle: 'Doing' },
-  { id: 'review', title: 'Review', color: 'bg-purple-50 dark:bg-purple-950/30', shortTitle: 'Review' },
-  { id: 'done', title: 'Done', color: 'bg-green-50 dark:bg-green-950/30', shortTitle: 'Done' },
-] as const
-
-type Task = {
-  id: string
-  title: string
-  description?: string
-  status: 'backlog' | 'todo' | 'in_progress' | 'review' | 'done'
-  priority: 'low' | 'medium' | 'high' | 'urgent'
-  project_id?: string
-  due_date?: string
-  created_at: string
-  updated_at: string
-}
-
 type Project = {
   id: string
   name: string
 }
 
-function getPriorityColor(priority: string): string {
-  switch (priority) {
-    case 'urgent': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-    case 'high': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
-    case 'medium': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-    default: return 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200'
-  }
-}
-
-/**
- * Send webhook notification to Fred
- */
-async function sendTaskWebhook(
-  event: string,
-  task: Task,
-  previousData?: Partial<Task>
-) {
-  try {
-    const payload = {
-      event,
-      timestamp: new Date().toISOString(),
-      task: {
-        id: task.id,
-        title: task.title,
-        description: task.description,
-        status: task.status,
-        previous_status: previousData?.status,
-        priority: task.priority,
-        project_id: task.project_id,
-        due_date: task.due_date,
-        completed_by: 'jakob',
-        completed_at: task.status === 'done' ? new Date().toISOString() : undefined,
-        updated_by: 'jakob'
-      }
-    }
-
-    const response = await fetch('/api/webhooks/tasks', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Webhook-Signature': 'temp-signature'
-      },
-      body: JSON.stringify(payload)
-    })
-
-    if (!response.ok) {
-      throw new Error(`Webhook failed: ${response.status}`)
-    }
-
-    console.log(`[TaskSync] Sent ${event} for:`, task.title)
-    return await response.json()
-
-  } catch (error) {
-    console.error('[TaskSync] Failed to send webhook:', error)
-    // Don't throw - we don't want to block the UI on webhook failure
-  }
-}
-
-function TaskCard({ 
-  task, 
-  projectMap, 
-  onStatusChange 
-}: { 
-  task: Task
-  projectMap: Map<string, string>
-  onStatusChange: (task: Task, newStatus: Task['status']) => void
-}) {
-  const [isCompleting, setIsCompleting] = useState(false)
-
-  const handleComplete = async () => {
-    if (task.status === 'done') return
-    
-    setIsCompleting(true)
-    const previousStatus = task.status
-    
-    // Optimistically update UI
-    onStatusChange(task, 'done')
-    
-    try {
-      // Update in Supabase
-      const { error } = await supabase
-        .from('tasks')
-        .update({
-          status: 'done',
-          completed_at: new Date().toISOString(),
-          completed_by: 'jakob',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', task.id)
-
-      if (error) throw error
-
-      // Notify Fred
-      await sendTaskWebhook('task.completed', 
-        { ...task, status: 'done' }, 
-        { status: previousStatus }
-      )
-
-    } catch (error) {
-      console.error('Failed to complete task:', error)
-      // Revert on error
-      onStatusChange(task, previousStatus)
-    } finally {
-      setIsCompleting(false)
-    }
-  }
-
-  return (
-    <Card className="cursor-pointer hover:shadow-md transition-shadow bg-white dark:bg-slate-900 group">
-      <CardContent className="p-3">
-        <div className="flex items-start gap-2">
-          {/* Complete checkbox */}
-          <div className="pt-0.5">
-            <Checkbox 
-              checked={task.status === 'done'}
-              onCheckedChange={handleComplete}
-              disabled={isCompleting || task.status === 'done'}
-              className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
-            />
-          </div>
-          
-          <div className="flex-1 min-w-0">
-            <p className={`text-sm font-medium mb-2 ${task.status === 'done' ? 'line-through text-muted-foreground' : ''}`}>
-              {task.title}
-            </p>
-
-            {task.description && (
-              <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
-                {task.description}
-              </p>
-            )}
-
-            <div className="flex items-center justify-between gap-2">
-              <span className={`text-xs px-2 py-0.5 rounded ${getPriorityColor(task.priority)}`}>
-                {task.priority}
-              </span>
-
-              {task.project_id && projectMap.get(task.project_id) && (
-                <span className="text-xs text-muted-foreground truncate max-w-[100px]">
-                  {projectMap.get(task.project_id)}
-                </span>
-              )}
-            </div>
-
-            {task.due_date && (
-              <p className="text-xs text-muted-foreground mt-2">
-                Due: {new Date(task.due_date).toLocaleDateString('no-NO')}
-              </p>
-            )}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-function ColumnContent({
-  column,
-  tasks,
-  projectMap,
-  onStatusChange
-}: {
-  column: typeof columns[number]
-  tasks: Task[]
-  projectMap: Map<string, string>
-  onStatusChange: (task: Task, newStatus: Task['status']) => void
-}) {
-  return (
-    <div className={`${column.color} rounded-lg p-3 h-full min-h-[300px]`}>
-      <h3 className="font-semibold mb-3 flex items-center justify-between">
-        <span className="hidden sm:inline">{column.title}</span>
-        <span className="sm:hidden">{column.shortTitle}</span>
-        <Badge variant="secondary">{tasks.length}</Badge>
-      </h3>
-
-      <div className="space-y-2">
-        {tasks.map((task: Task) => (
-          <TaskCard 
-            key={task.id} 
-            task={task} 
-            projectMap={projectMap}
-            onStatusChange={onStatusChange}
-          />
-        ))}
-
-        {tasks.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground text-sm">
-            No tasks
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
+const PRIORITY_FILTERS = ['all', 'urgent', 'high', 'medium', 'low'] as const
+const CATEGORY_TAGS = ['business', 'finance', 'health', 'tech', 'personal'] as const
 
 export default function KanbanPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [showCompleted, setShowCompleted] = useState(false)
+  const [showTaskModal, setShowTaskModal] = useState(false)
+  const [priorityFilter, setPriorityFilter] = useState<string>('all')
+  const [categoryFilter, setCategoryFilter] = useState<string>('all')
 
   // Fetch tasks and projects
   useEffect(() => {
@@ -269,23 +60,92 @@ export default function KanbanPage() {
     fetchData()
   }, [])
 
-  // Handle status change (optimistic update)
-  const handleStatusChange = useCallback((task: Task, newStatus: Task['status']) => {
-    setTasks(prev => 
-      prev.map(t => 
-        t.id === task.id ? { ...t, status: newStatus } : t
-      )
-    )
+  const handleTaskCreated = useCallback((newTask: Task) => {
+    setTasks(prev => [newTask, ...prev])
+  }, [])
+
+  const handleStatusChange = useCallback(async (task: Task, newStatus: Task['status']) => {
+    const previousStatus = task.status
+    
+    // Optimistic update
+    setTasks(prev => prev.map(t => 
+      t.id === task.id ? { ...t, status: newStatus } : t
+    ))
+
+    try {
+      const updateData: Record<string, any> = {
+        status: newStatus,
+        updated_at: new Date().toISOString()
+      }
+      
+      // Set or clear completed_at based on status
+      if (newStatus === 'done') {
+        updateData.completed_at = new Date().toISOString()
+      } else if (previousStatus === 'done') {
+        updateData.completed_at = null
+      }
+
+      const { error } = await supabase
+        .from('tasks')
+        .update(updateData)
+        .eq('id', task.id)
+
+      if (error) throw error
+
+      // Notify Fred
+      const event = newStatus === 'done' ? 'task.completed' : 
+                    previousStatus === 'done' ? 'task.reopened' : 'task.updated'
+      
+      await fetch('/api/webhooks/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event,
+          timestamp: new Date().toISOString(),
+          task: {
+            id: task.id,
+            title: task.title,
+            status: newStatus,
+            previous_status: previousStatus
+          }
+        })
+      })
+    } catch (error) {
+      console.error('Failed to update task:', error)
+      // Revert on error
+      setTasks(prev => prev.map(t => 
+        t.id === task.id ? { ...t, status: previousStatus } : t
+      ))
+    }
   }, [])
 
   const projectMap = new Map(projects.map(p => [p.id, p.name]))
-  const activeTasks = tasks.filter(t => t.status !== 'done').length
-  const doneTasks = tasks.filter(t => t.status === 'done').length
+  
+  // Apply filters
+  const filteredTasks = useMemo(() => {
+    let result = tasks
+    
+    if (priorityFilter !== 'all') {
+      result = result.filter(t => t.priority === priorityFilter)
+    }
+    
+    if (categoryFilter !== 'all') {
+      result = result.filter(t => 
+        t.tags?.includes(categoryFilter) || 
+        projectMap.get(t.project_id || '')?.toLowerCase().includes(categoryFilter)
+      )
+    }
+    
+    return result
+  }, [tasks, priorityFilter, categoryFilter, projectMap])
 
-  const tasksByColumn = columns.reduce((acc, column) => {
-    acc[column.id] = tasks.filter((task: Task) => task.status === column.id)
-    return acc
-  }, {} as Record<string, Task[]>)
+  const activeTasks = filteredTasks.filter(t => t.status !== 'done').length
+  const doneTasks = filteredTasks.filter(t => t.status === 'done').length
+  const urgentCount = tasks.filter(t => t.priority === 'urgent' && t.status !== 'done').length
+  const overdueCount = tasks.filter(t => {
+    if (!t.due_date || t.status === 'done') return false
+    return new Date(t.due_date) < new Date(new Date().toDateString())
+  }).length
 
   if (loading) {
     return (
@@ -304,7 +164,9 @@ export default function KanbanPage() {
             Tasks
           </h1>
           <p className="text-muted-foreground mt-1 text-sm lg:text-base">
-            {activeTasks} active • {doneTasks} completed • {tasks.length} total
+            {activeTasks} active • {doneTasks} completed
+            {urgentCount > 0 && <span className="text-red-500 ml-2">• {urgentCount} urgent</span>}
+            {overdueCount > 0 && <span className="text-orange-500 ml-2">• {overdueCount} overdue</span>}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -312,48 +174,71 @@ export default function KanbanPage() {
             variant="outline" 
             size="sm"
             onClick={() => setShowCompleted(!showCompleted)}
-            className={showCompleted ? 'bg-green-50' : ''}
+            className={showCompleted ? 'bg-green-50 dark:bg-green-950' : ''}
           >
             <CheckCircle2 className="h-4 w-4 mr-1" />
             {showCompleted ? 'Hide' : 'Show'} Done
           </Button>
-          <Button className="w-full sm:w-auto">+ New Task</Button>
+          <Button className="w-full sm:w-auto" onClick={() => setShowTaskModal(true)}>
+            <Plus className="h-4 w-4 mr-1" />
+            New Task
+          </Button>
         </div>
       </div>
 
-      {/* Desktop: Horizontal scroll kanban */}
-      <div className="hidden lg:flex gap-4 overflow-x-auto pb-4">
-        {columns.map((column) => (
-          <div 
-            key={column.id} 
-            className={`w-80 flex-shrink-0 ${column.id === 'done' && !showCompleted ? 'hidden' : ''}`}
+      {/* Filter Bar */}
+      <div className="flex flex-wrap gap-2 items-center">
+        <span className="text-sm text-muted-foreground flex items-center gap-1">
+          <Filter className="h-4 w-4" /> Priority:
+        </span>
+        {PRIORITY_FILTERS.map((p) => (
+          <Button
+            key={p}
+            variant={priorityFilter === p ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setPriorityFilter(p)}
+            className={`text-xs ${p === 'urgent' && priorityFilter !== p ? 'border-red-500/50 text-red-400' : ''} ${p === 'high' && priorityFilter !== p ? 'border-orange-500/50 text-orange-400' : ''}`}
           >
-            <ColumnContent
-              column={column}
-              tasks={tasksByColumn[column.id]}
-              projectMap={projectMap}
-              onStatusChange={handleStatusChange}
-            />
-          </div>
+            {p === 'all' ? 'All' : p.charAt(0).toUpperCase() + p.slice(1)}
+          </Button>
+        ))}
+        
+        <span className="text-sm text-muted-foreground ml-4">Category:</span>
+        <Button
+          variant={categoryFilter === 'all' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setCategoryFilter('all')}
+          className="text-xs"
+        >
+          All
+        </Button>
+        {CATEGORY_TAGS.map((tag) => (
+          <Button
+            key={tag}
+            variant={categoryFilter === tag ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setCategoryFilter(tag)}
+            className="text-xs"
+          >
+            {tag.charAt(0).toUpperCase() + tag.slice(1)}
+          </Button>
         ))}
       </div>
 
-      {/* Mobile/Tablet: Stacked view */}
-      <div className="lg:hidden space-y-4">
-        {columns.map((column) => (
-          <div 
-            key={column.id}
-            className={column.id === 'done' && !showCompleted ? 'hidden' : ''}
-          >
-            <ColumnContent
-              column={column}
-              tasks={tasksByColumn[column.id]}
-              projectMap={projectMap}
-              onStatusChange={handleStatusChange}
-            />
-          </div>
-        ))}
-      </div>
+      <KanbanBoard
+        tasks={filteredTasks}
+        projectMap={projectMap}
+        showCompleted={showCompleted}
+        onTasksChange={setTasks}
+        onStatusChange={handleStatusChange}
+      />
+
+      <TaskModal
+        open={showTaskModal}
+        onOpenChange={setShowTaskModal}
+        projects={projects}
+        onTaskCreated={handleTaskCreated}
+      />
     </div>
   )
 }

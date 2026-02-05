@@ -82,37 +82,65 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  /* Neon Dark Mode Theme */
+  --background: #0a0a0f;
+  --foreground: #ffffff;
+  --card: #12121a;
+  --card-foreground: #ffffff;
+  --popover: #1a1a25;
+  --popover-foreground: #ffffff;
+  --primary: #00ffff;
+  --primary-foreground: #0a0a0f;
+  --secondary: #1a1a25;
+  --secondary-foreground: #ffffff;
+  --muted: #1a1a25;
+  --muted-foreground: #a0a0b0;
+  --accent: #00ffff;
+  --accent-foreground: #0a0a0f;
+  --destructive: #ff0055;
+  --border: #1a1a25;
+  --input: #1a1a25;
+  --ring: #00ffff;
+  
+  /* Neon chart colors */
+  --chart-1: #00ffff;
+  --chart-2: #ff00ff;
+  --chart-3: #00ff88;
+  --chart-4: #ff8800;
+  --chart-5: #8855ff;
+  
+  /* Sidebar */
+  --sidebar: #0d0d14;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #00ffff;
+  --sidebar-primary-foreground: #0a0a0f;
+  --sidebar-accent: #1a1a25;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #1a1a25;
+  --sidebar-ring: #00ffff;
+  
+  /* Custom neon colors */
+  --neon-cyan: #00ffff;
+  --neon-pink: #ff00ff;
+  --neon-green: #00ff88;
+  --neon-orange: #ff8800;
+  --neon-purple: #8855ff;
+  --neon-blue: #0088ff;
+  --neon-red: #ff0055;
+  --neon-yellow: #ffff00;
+  
+  /* Priority colors */
+  --priority-urgent: #ff0055;
+  --priority-high: #ff8800;
+  --priority-medium: #ffff00;
+  --priority-low: #00ff88;
+  
+  /* Status colors */
+  --status-backlog: #555588;
+  --status-todo: #0088ff;
+  --status-progress: #ff8800;
+  --status-review: #8855ff;
+  --status-done: #00ff88;
 }
 
 @layer base {
@@ -122,4 +150,13 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Fix for drag-and-drop positioning with sidebar transforms */
+[data-rfd-draggable-context-id] {
+  position: relative;
+}
+
+[data-rfd-drag-handle-draggable-id] {
+  transition: transform 0.01s linear !important;
 }

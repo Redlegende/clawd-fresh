@@ -7,6 +7,97 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY!
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 /**
+ * POST /api/fred/tasks
+ * Fred creates a new task
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { 
+      title, 
+      description, 
+      priority = 'medium', 
+      status = 'todo',
+      project_id,
+      due_date,
+      tags,
+      source = 'fred'
+    } = body
+
+    if (!title) {
+      return NextResponse.json(
+        { error: 'Title is required' },
+        { status: 400 }
+      )
+    }
+
+    // Validate priority
+    const validPriorities = ['low', 'medium', 'high', 'urgent']
+    if (!validPriorities.includes(priority)) {
+      return NextResponse.json(
+        { error: `Invalid priority. Must be one of: ${validPriorities.join(', ')}` },
+        { status: 400 }
+      )
+    }
+
+    // Validate status
+    const validStatuses = ['backlog', 'todo', 'in_progress', 'review', 'done']
+    if (!validStatuses.includes(status)) {
+      return NextResponse.json(
+        { error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` },
+        { status: 400 }
+      )
+    }
+
+    // Create the task
+    const { data: task, error } = await supabase
+      .from('tasks')
+      .insert({
+        title,
+        description,
+        priority,
+        status,
+        project_id: project_id || null,
+        due_date: due_date || null,
+        tags: tags || [],
+        source,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .select()
+      .single()
+
+    if (error) throw error
+
+    // Log the creation
+    await supabase.from('task_sync_log').insert({
+      event_type: 'created',
+      task_id: task.id,
+      task_title: task.title,
+      new_status: task.status,
+      completed_by: 'fred',
+      synced_at: new Date().toISOString(),
+      webhook_status: 'delivered'
+    })
+
+    console.log(`[Fred API] Task created: ${task.title}`)
+
+    return NextResponse.json({
+      ok: true,
+      message: 'Task created successfully',
+      task
+    }, { status: 201 })
+
+  } catch (error) {
+    console.error('[Fred API] Error creating task:', error)
+    return NextResponse.json(
+      { error: 'Failed to create task' },
+      { status: 500 }
+    )
+  }
+}
+
+/**
  * GET /api/fred/tasks
  * Get tasks for Fred to review/work on
  */

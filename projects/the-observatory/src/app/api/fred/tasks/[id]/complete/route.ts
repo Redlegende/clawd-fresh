@@ -48,7 +48,6 @@ export async function POST(
       .update({
         status: 'done',
         completed_at: new Date().toISOString(),
-        completed_by: completed_by,
         updated_at: new Date().toISOString()
       })
       .eq('id', taskId)
