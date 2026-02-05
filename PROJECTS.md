@@ -7,7 +7,7 @@
 ## 🏢 BUSINESS SYSTEMS
 
 ### Kvitfjellhytter Dashboard
-**Status:** ✅ Deployed → Needs Polish  
+**Status:** 🟢 Deployed — OAuth Ready  
 **Location:** `projects/Kvitfjellhytter/`  
 **Live:** https://app-pink-eight-65.vercel.app  
 
@@ -15,16 +15,18 @@
 - ✅ UI redesign (cyan theme)
 - ✅ Next.js + Supabase + Vercel
 - ✅ iGMS OAuth flow implemented
+- ✅ Environment variables fixed (client_id, client_secret)
 
 **Next:**
-- Connect iGMS OAuth (test API)
+- ⏳ You click "Connect iGMS" on dashboard
+- Test iGMS API with real data
 - Fix Supabase RLS policy recursion error
 - Add booking calendar view
 
 ---
 
 ### 3dje Boligsektor
-**Status:** 🔴 HIGH PRIORITY — Phase 2 Planning  
+**Status:** 🔴 HIGH PRIORITY — Phase 2 Day 1  
 **Location:** `projects/3dje-boligsektor/`  
 **Collaboration:** Henrik
 
@@ -32,14 +34,14 @@
 - Real estate development for social housing
 - Goal: Pipeline towards 10,000+ boliger
 - Phase 1: Clay-based kommune analysis (126 kommuner) ✅
-- Phase 2: Tomte-sourcing system (find developable land)
+- Phase 2: Tomte-sourcing system — 🏗️ IN PROGRESS
 
-**Three Implementation Approaches:**
-| Approach | Timeline | Investment | Best For |
-|----------|----------|------------|----------|
-| A: Lean Launch | 3-4 weeks | NOK 50-75k | Quick validation |
-| B: Professional | 8-10 weeks | NOK 250-350k | Balanced speed & capability |
-| C: Enterprise | 16-20 weeks | NOK 600-800k | Scale & competitive advantage |
+**Current Sprint (This Week):**
+- **Budget:** 5000 NOK initial development
+- **Timeline:** 5 days (Mon-Fri)
+- **Goal:** Demo + presentation for apartment developers
+
+**Approach:** B: Professional (validated)
 
 **Key Data Sources:**
 - Kartverket/Geonorge (property/cadastre data)
@@ -47,11 +49,17 @@
 - Arealplaner.no (zoning plans)
 - Husbanken (social housing policies)
 
-**Research:** Complete — see `projects/3dje-boligsektor/PHASE2-APPROACHES.md`
+**Documentation (Source of Truth):**
+- `README-BUILD-START.md` — Start here
+- `MVP-SCOPE-AND-PLAN.md` — 5-day build plan
+- `LEAN-ARCHITECTURE.md` — System design
+- `SOP-MANUAL-VERIFICATION.md` — Quality procedures
 
-**Next:**
-- Schedule planning session with Henrik
-- Choose approach (recommend B: Professional)
+**Next (Day 1):**
+- [ ] Read MVP-SCOPE-AND-PLAN.md
+- [ ] Select 2 pilot municipalities
+- [ ] Set up Python environment
+- [ ] Test Arealplaner.no WFS connection
 
 ---
 
@@ -132,28 +140,29 @@ python src/agent.py "Your research topic" -o report.md
 
 ---
 
-### The Observatory (formerly Everything Dashboard)
-**Status:** 🏗️ In Progress — Autonomous Build Tonight  
-**Location:** `projects/the-observatory/`
+### The Observatory
+**Status:** 🟢 LIVE + Evolving  
+**Location:** `projects/the-observatory/`  
+**Live:** https://the-observatory-1hacj9k8k-redlegendes-projects.vercel.app
 
-Personal command center: Mission Control + Kanban + Fitness Lab + Research Reader + Finance
+Personal command center: Mission Control + Kanban + Fitness Lab + Research Reader + Finance + Fred Control
 
-**Modules Planned:**
+**Modules:**
 1. **Mission Control** — Today's focus, quick stats, alerts
 2. **Kanban** — Drag-and-drop todos, project filtering
 3. **Fitness Lab** — Garmin Epix Pro sync (Body Battery, VO2 Max, HRV)
 4. **Research Reader** — Markdown viewer for notes
 5. **Finance** — Hours worked, earnings tracking
+6. **Fred Control** — Workspace file management (NEW)
 
-**Tonight's Work (Auto-Scheduled 23:00):**
-- ✅ Install Garmin skill
-- ✅ Design Supabase schema
-- ✅ Initialize Next.js project
-- ⏳ Garmin auth (needs Jakob's credentials)
-- ⏳ Supabase connection (needs URL + key)
+**Working:**
+- ✅ All 6 pages deployed and functional
+- ✅ Supabase connected with live data
+- ✅ 30 days Garmin data synced
+- ✅ Task sync with Fred (webhooks)
+- ✅ Fred Control Panel — browse, view, manage workspace files
 
 **Tech Stack:** Next.js 16, Supabase, shadcn/ui, Recharts
-**See:** `projects/the-observatory/TONIGHT-WORK-PLAN.md` for full details
 
 ---
 

@@ -2,11 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/morning-sync",
-      "schedule": "0 8 * * *"
-    },
-    {
-      "path": "/api/cron/task-check",
-      "schedule": "0 9-22 * * *"
+      "schedule": "0 7 * * *"
     }
   ]
 }

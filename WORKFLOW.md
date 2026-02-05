@@ -10,6 +10,22 @@
 
 Don't wait to be asked. Don't say "I'll remember." Write it immediately.
 
+## 🔄 CLOSE THE LOOP (CRITICAL)
+
+**What this means:** When work is done, the loop isn't closed until files are updated.
+
+**Close the loop on:**
+- ✅ Code written → PROJECTS.md updated
+- ✅ Task completed → TODO.md moved to DONE
+- ✅ Lesson learned → MEMORY.md updated
+- ✅ Bug fixed → FAILURE_LOG.md updated
+- ✅ Decision made → decisions.md updated
+
+**Never say:** "I'll update the files later" → Do it NOW.
+**Never say:** "Should I update the files?" → You should have already done it.
+
+**The test:** If you left now, would the files reflect reality? If not, the loop is open.
+
 ---
 
 ## 📋 Automatic File Updates (Triggers)

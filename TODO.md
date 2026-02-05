@@ -8,12 +8,42 @@
 
 | Priority | Task | Project | Status |
 |----------|------|---------|--------|
-| 1 | **🚀 Hybrid Browser Autonomy** — Build skill for autonomous web control (Peekaboo + Extension) | System | 🔴 HIGH PRIORITY — Enables true autonomy |
-| 2 | **🎯 3dje Boligsektor Phase 2** — Apply for Kartverket Matrikkel agreement | 3dje Boligsektor | 🔴 BLOCKER for owner lookup |
-| 3 | **Connect iGMS OAuth** — Click "Connect iGMS" on dashboard and authorize | Kvitfjellhytter | Code ready, needs your auth |
-| 4 | **Test iGMS API** with real data after OAuth | Kvitfjellhytter | Blocked until #3 done |
-| 5 | **🌙 The Observatory Build** — Supabase LIVE, 30 days Garmin data, all pages working | The Observatory | ✅ COMPLETE |
-| 6 | **🤖 Sub-Agent Setup** — All agents operational | System | ✅ COMPLETE |
+| 1 | **🧹 Clean cabins** — 11:00-15:00 window | Kvitfjellhytter | 🔴 IN PROGRESS (cleaning day) |
+| 2 | **🎯 3dje Boligsektor Day 1** — Read MVP plan, select 2 pilot municipalities | 3dje Boligsektor | 🔴 HIGH PRIORITY |
+| 3 | **Connect iGMS OAuth** — Click "Connect iGMS" on dashboard and authorize | Kvitfjellhytter | ⏳ Waiting on you |
+| 4 | **Apply for Kartverket Matrikkel agreement** — For automatic owner lookup | 3dje Boligsektor | 🔴 BLOCKER |
+
+### ✅ COMPLETED TODAY (2026-02-05)
+
+**Workspace Cleanup:**
+- [x] Removed 8 duplicate cron jobs (morning briefs, health checks)
+- [x] Deleted 15 empty folders across projects
+- [x] Archived 5 outdated docs (old build reports)
+- [x] Removed contradictory template files from 3dje-boligsektor
+- [x] Workspace health: CLEAN — all checks passing
+
+**Fred Control Panel:**
+- [x] Created `/fred-control` page in Observatory
+- [x] File tree view for workspace MD files
+- [x] Status panel (git, supabase, health, cron)
+- [x] Quick actions (sync, commit, backup)
+- [x] API routes for file management
+- [x] Deployed to production
+
+**Morning Brief System:**
+- [x] Created `morning-brief` skill
+- [x] Cron job at 8:00 AM daily
+- [x] Includes cleaning schedule, cabin operations, active tasks
+
+**iGMS OAuth:**
+- [x] Fixed environment variables in Vercel (client_id, client_secret)
+- [x] Deployed with correct credentials
+- [x] Ready for your authorization click
+
+**System Improvements:**
+- [x] Updated WORKFLOW.md with "CLOSE THE LOOP" rule
+- [x] Added explicit file update requirements
+- [x] Committed all changes to git
 
 ### ✅ COMPLETED TODAY (2026-02-03)
 

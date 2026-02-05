@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
-import { LayoutDashboard, Kanban, Activity, Wallet, FileText, Menu, Settings } from 'lucide-react'
+import { LayoutDashboard, Kanban, Activity, Wallet, FileText, Menu, Settings, Cpu } from 'lucide-react'
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ThemeToggle'
@@ -15,6 +15,7 @@ const navItems = [
   { href: '/finance', label: 'Finance', icon: Wallet },
   { href: '/research', label: 'Research', icon: FileText },
   { href: '/settings', label: 'Settings', icon: Settings },
+  { href: '/fred-control', label: 'Fred Control', icon: Cpu },
 ]
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
