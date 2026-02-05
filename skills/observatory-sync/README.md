@@ -31,6 +31,12 @@ observatory-comment.sh abc123 "Waiting for Henrik's reply"
 observatory-comment.sh abc123 "Internal note" -i
 ```
 
+### Log Work Update (Fred)
+```bash
+observatory-work-update.sh abc123 "Researched API endpoints"
+observatory-work-update.sh abc123 "Fixed bug in auth flow"
+```
+
 ### Check Notifications
 ```bash
 observatory-notifications.sh            # Show unread

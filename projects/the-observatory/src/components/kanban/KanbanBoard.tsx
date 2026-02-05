@@ -272,7 +272,7 @@ export function KanbanBoard({
 
   const handleTaskUpdated = (updatedTask: Task) => {
     const updatedTasks = tasks.map(t => 
-      t.id === updatedTask.id ? { ...t, comment_count: updatedTask.comment_count } : t
+      t.id === updatedTask.id ? { ...t, ...updatedTask } : t
     )
     onTasksChange(updatedTasks)
     setSelectedTask(updatedTask)

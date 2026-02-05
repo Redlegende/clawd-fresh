@@ -20,6 +20,11 @@ type Project = {
 
 const PRIORITY_FILTERS = ['all', 'urgent', 'high', 'medium', 'low'] as const
 const CATEGORY_TAGS = ['business', 'finance', 'health', 'tech', 'personal'] as const
+const SORT_OPTIONS = [
+  { value: 'priority', label: 'Priority' },
+  { value: 'due_date', label: 'Due Date' },
+  { value: 'created', label: 'Created' }
+] as const
 
 export default function KanbanPage() {
   const [tasks, setTasks] = useState<Task[]>([])
@@ -29,6 +34,7 @@ export default function KanbanPage() {
   const [showTaskModal, setShowTaskModal] = useState(false)
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
+  const [sortBy, setSortBy] = useState<string>('priority')
 
   // Fetch tasks and projects
   useEffect(() => {
@@ -130,7 +136,7 @@ export default function KanbanPage() {
 
   const projectMap = new Map(projects.map(p => [p.id, p.name]))
   
-  // Apply filters
+  // Apply filters and sorting
   const filteredTasks = useMemo(() => {
     let result = tasks
     
@@ -139,14 +145,42 @@ export default function KanbanPage() {
     }
     
     if (categoryFilter !== 'all') {
-      result = result.filter(t => 
-        t.tags?.includes(categoryFilter) || 
-        projectMap.get(t.project_id || '')?.toLowerCase().includes(categoryFilter)
-      )
+      result = result.filter(t => {
+        // Check tags
+        const hasTag = t.tags?.some(tag => tag.toLowerCase() === categoryFilter.toLowerCase())
+        // Check project name
+        const projectName = projectMap.get(t.project_id || '')?.toLowerCase() || ''
+        const projectMatches = projectName.includes(categoryFilter.toLowerCase())
+        // Check task title/description
+        const titleMatches = t.title.toLowerCase().includes(categoryFilter.toLowerCase())
+        const descMatches = t.description?.toLowerCase().includes(categoryFilter.toLowerCase()) || false
+        
+        return hasTag || projectMatches || titleMatches || descMatches
+      })
     }
     
+    // Sort tasks
+    result = [...result].sort((a, b) => {
+      switch (sortBy) {
+        case 'due_date':
+          // Tasks with due dates first, sorted by date
+          if (!a.due_date && !b.due_date) return 0
+          if (!a.due_date) return 1
+          if (!b.due_date) return -1
+          return new Date(a.due_date).getTime() - new Date(b.due_date).getTime()
+        
+        case 'priority':
+          const priorityWeight = { urgent: 0, high: 1, medium: 2, low: 3 }
+          return priorityWeight[a.priority] - priorityWeight[b.priority]
+        
+        case 'created':
+        default:
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      }
+    })
+    
     return result
-  }, [tasks, priorityFilter, categoryFilter, projectMap])
+  }, [tasks, priorityFilter, categoryFilter, sortBy, projectMap])
 
   const activeTasks = filteredTasks.filter(t => t.status !== 'done').length
   const doneTasks = filteredTasks.filter(t => t.status === 'done').length
@@ -230,6 +264,19 @@ export default function KanbanPage() {
             className="text-xs"
           >
             {tag.charAt(0).toUpperCase() + tag.slice(1)}
+          </Button>
+        ))}
+        
+        <span className="text-sm text-muted-foreground ml-4">Sort:</span>
+        {SORT_OPTIONS.map((opt) => (
+          <Button
+            key={opt.value}
+            variant={sortBy === opt.value ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSortBy(opt.value)}
+            className="text-xs"
+          >
+            {opt.label}
           </Button>
         ))}
       </div>
