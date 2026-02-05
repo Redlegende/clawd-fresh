@@ -14,7 +14,7 @@ Generates comprehensive daily morning briefs combining:
 
 ## Schedule
 
-**Daily at 8:00 AM Europe/Oslo**
+**Daily at 8:00 AM Europe/Oslo (replaces old observatory-morning-brief)**
 
 ## Output Format
 
