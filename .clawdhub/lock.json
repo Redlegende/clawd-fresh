@@ -60,6 +60,26 @@
     "prompts-workflow": {
       "version": "1.0.0",
       "installedAt": 1770166829580
+    },
+    "xmtp-cli": {
+      "version": "1.0.0",
+      "installedAt": 1770253225470
+    },
+    "xmtp-agent": {
+      "version": "1.0.0",
+      "installedAt": 1770253229335
+    },
+    "vestaboard": {
+      "version": "1.0.0",
+      "installedAt": 1770253231817
+    },
+    "api-gateway": {
+      "version": "1.0.6",
+      "installedAt": 1770253234868
+    },
+    "agent-directory": {
+      "version": "1.2.0",
+      "installedAt": 1770253235882
     }
   }
 }

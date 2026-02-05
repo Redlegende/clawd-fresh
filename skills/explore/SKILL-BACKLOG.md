@@ -101,14 +101,16 @@ Skills discovered from clawdhub that may enhance capabilities. Research up to 5 
 ### xmtp-cli v1.0.0
 - **Description:** Run and script the XMTP CLI for testing, debugging, and messaging
 - **Relevance:** Web3 messaging protocol
-- **Status:** 📝 Pending
-- **Notes:** Not currently relevant to any active projects
+- **Status:** ❌ SKIP
+- **Verdict:** XMTP is a decentralized messaging protocol (Web3 "email"). Skill provides CLI for testing conversations, groups, messages. Complete Web3 focus with no overlap to Jakob's businesses (cabin rentals, real estate). No current or planned Web3 messaging needs. Skip.
+- **Location:** `skills/explore/xmtp-cli/` (will delete)
 
 ### xmtp-agent v1.0.0
 - **Description:** Building and extending XMTP agents with the Agent SDK
 - **Relevance:** Web3 messaging
-- **Status:** 📝 Pending
-- **Notes:** Overlap with xmtp-cli
+- **Status:** ❌ SKIP
+- **Verdict:** Event-driven messaging agents on XMTP network. Same Web3/decentralized focus as xmtp-cli. Agent SDK for building bots that handle commands, attachments, reactions, crypto payments. No relevance to Kvitfjellhytter or 3dje Boligsektor operations. Skip.
+- **Location:** `skills/explore/xmtp-agent/` (will delete)
 
 ### clawshot v1.2.0
 - **Description:** "Instagram for AI agents" — social platform for sharing screenshots, building following, engaging with other agents
@@ -120,8 +122,9 @@ Skills discovered from clawdhub that may enhance capabilities. Research up to 5 
 ### vestaboard v1.0.0
 - **Description:** Read and write messages on a Vestaboard using the local network API
 - **Relevance:** Physical display board integration
-- **Status:** 📝 Pending
-- **Notes:** No Vestaboard hardware; not relevant
+- **Status:** ❌ SKIP
+- **Verdict:** Controls Vestaboard hardware (6x22 character split-flap display). Requires physical device (~$3,000). Cloud API for updating displays remotely. Jakob doesn't own this hardware and has no use case for physical signage. Completely irrelevant unless acquiring Vestaboard. Skip.
+- **Location:** `skills/explore/vestaboard/` (will delete)
 
 ### voidex-arena v1.0.3
 - **Description:** Voidex Arena — galactic trading game for AI agents
@@ -157,8 +160,9 @@ Skills discovered from clawdhub that may enhance capabilities. Research up to 5 
 ### api-gateway v1.0.1
 - **Description:** API gateway for calling third-party APIs with managed authentication
 - **Relevance:** Generic API calling
-- **Status:** 📝 Pending
-- **Notes:** Similar to http_request tool already available
+- **Status:** 🤔 MAYBE
+- **Verdict:** Maton.ai-powered gateway with managed OAuth for 30+ services (Slack, HubSpot, Salesforce, Stripe, Google Workspace, etc.). Single API key + OAuth flow instead of managing individual service credentials. Well-documented with extensive reference guides. However, Jakob already has `gog` for Google services and other specific tools. Only valuable if he needs unified access to many services (e.g., HubSpot + Salesforce + Stripe together). Keep as option for future CRM/sales stack integration.
+- **Location:** `skills/explore/api-gateway/`
 
 ### prompts-workflow v1.0.0
 - **Description:** Automated workflow for collecting prompts (Reddit, GitHub, HN, SearXNG), converting to Clawdbot Skills, publishing to ClawdHub
@@ -188,8 +192,9 @@ Skills discovered from clawdhub that may enhance capabilities. Research up to 5 
 ### agent-directory v1.2.0
 - **Description:** The directory for AI agent services. Discover tools, services, and agents
 - **Relevance:** Agent discovery
-- **Status:** 📝 Pending
-- **Notes:** Similar to clawdhub explore
+- **Status:** ❌ SKIP
+- **Verdict:** Directory service (ctxly.com) for discovering agent tools/platforms. Similar to ClawdHub explore function already built into `clawdhub` CLI. Just a JSON API wrapper around service listings. No unique value over existing discovery methods. Skip.
+- **Location:** `skills/explore/agent-directory/` (will delete)
 
 ### qqmap v1.0.0
 - **Description:** 腾讯地图Web服务API集成 (Tencent Maps Web Service API)
@@ -222,6 +227,7 @@ Skills discovered from clawdhub that may enhance capabilities. Research up to 5 
 | 2026-02-02 | google-calendar, clawmail-skill, google-sheet, agent-builder, docstrange | 2 INSTALL, 2 MAYBE, 1 SKIP |
 | 2026-02-03 | meta-tags, hybrid-memory, computer-use, prompt-optimizer, capability-evolver | 1 INSTALL, 1 MAYBE, 2 SKIP, 1 NOT FOUND |
 | 2026-02-04 | ai-humanizer, clawshot, reposit, progressive-memory, prompts-workflow | 2 MAYBE, 3 SKIP |
+| 2026-02-05 | xmtp-cli, xmtp-agent, vestaboard, api-gateway, agent-directory | 1 MAYBE, 4 SKIP |
 
 ---
 
