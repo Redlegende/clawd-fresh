@@ -1,221 +1,47 @@
-# TODO.md — Jakob's Tasks
+# TODO.md — Auto-synced from Observatory
 
-**Single source of truth for all tasks.**
+*Last synced: 2026-02-06 00:12*
 
----
+## ACTIVE
 
-## 🔴 NOW — Active Tasks
+### ARCHIVED
 
-| Priority | Task | Project | Status |
-|----------|------|---------|--------|
-| 1 | **🧹 Clean cabins** — 11:00-15:00 window | Kvitfjellhytter | 🔴 IN PROGRESS (cleaning day) |
-| 2 | **🎯 3dje Boligsektor Day 1** — Read MVP plan, select 2 pilot municipalities | 3dje Boligsektor | 🔴 HIGH PRIORITY |
-| 3 | **Connect iGMS OAuth** — Click "Connect iGMS" on dashboard and authorize | Kvitfjellhytter | ⏳ Waiting on you |
-| 4 | **Apply for Kartverket Matrikkel agreement** — For automatic owner lookup | 3dje Boligsektor | 🔴 BLOCKER |
+- [ ] Connect iGMS OAuth (high) | ID: 7f5b1bad-fbff-4c88-b4be-d5e18f83c983
+- [ ] Add property images to dashboard cards (medium) | ID: d7284e8d-7c17-4713-a720-632a9007e5a1
+### BACKLOG
 
-### ✅ COMPLETED TODAY (2026-02-05)
+- [ ] Test iGMS API with real data (high) | ID: d5c54719-6eff-4600-a9d4-c7963f8f143b
+- [ ] Connect fitness data to charts (low) | ID: d54b19b1-4e23-46e8-84f0-3f3917a791a7
+- [ ] Hour Tracking Phase 1B: Install PDF tools (medium) | ID: 6ce45653-491b-4529-a991-a76ac3bb0295
+- [ ] Implement booking calendar view (medium) | ID: de0f30ee-6029-4533-9df4-f5b155bdd292
+- [ ] Test iGMS API with real data (medium) | ID: f37a338f-21ef-48cd-a68e-382583948323
+- [ ] Install PDF tools (poppler) for hour tracking (medium) | ID: c56c32fc-c1b5-45d1-af35-c60752bfd64e
+### IN_PROGRESS
 
-**Workspace Cleanup:**
-- [x] Removed 8 duplicate cron jobs (morning briefs, health checks)
-- [x] Deleted 15 empty folders across projects
-- [x] Archived 5 outdated docs (old build reports)
-- [x] Removed contradictory template files from 3dje-boligsektor
-- [x] Workspace health: CLEAN — all checks passing
+- [ ] Connect iGMS OAuth and authorize (high) | ID: 601cc489-9813-4749-ba79-1a8e534134f1
+### REVIEW
 
-**Fred Control Panel:**
-- [x] Created `/fred-control` page in Observatory
-- [x] File tree view for workspace MD files
-- [x] Status panel (git, supabase, health, cron)
-- [x] Quick actions (sync, commit, backup)
-- [x] API routes for file management
-- [x] Deployed to production
+- [ ] Complete the hour tracking system. (medium) | ID: 26b4e6e6-525f-4a55-b3cc-31de13279e44
+### TODO
 
-**Morning Brief System:**
-- [x] Created `morning-brief` skill
-- [x] Cron job at 8:00 AM daily
-- [x] Includes cleaning schedule, cabin operations, active tasks
+- [ ] Choose first video topic and create script outline (low) | ID: fca212b9-945a-43f9-ad2c-080049401498
+- [ ] SSB Utleie (medium) | ID: 1e059b87-9467-4285-8885-b295e2bb6893
+- [ ] Mva Oppgave (medium) | ID: d124a6e1-2cf5-4149-a733-239f82d288d3
 
-**iGMS OAuth:**
-- [x] Fixed environment variables in Vercel (client_id, client_secret)
-- [x] Deployed with correct credentials
-- [x] Ready for your authorization click
+## DONE
 
-**System Improvements:**
-- [x] Updated WORKFLOW.md with "CLOSE THE LOOP" rule
-- [x] Added explicit file update requirements
-- [x] Committed all changes to git
-
-### ✅ COMPLETED TODAY (2026-02-03)
-
-**The Observatory:**
-- [x] Supabase database with 5 tables populated
-- [x] 30 days of Garmin fitness data uploaded
-- [x] All 6 pages working (Mission Control, Kanban, Fitness, Finance, Research, Settings)
-- [x] Dashboard deployed: https://the-observatory-2k8lny34s-redlegendes-projects.vercel.app
-- [x] Token persistence for Garmin (no more MFA spam)
-- [x] Daily sync at 8:30 AM configured
-
-**Calendar Management:**
-- [x] All cabin cleaning/check-in events scheduled (Feb 5-27)
-- [x] "NO DRIVING" days marked where cleaning + check-in overlap
-- [x] Hour tracking entries logged (17h = 6,375 kr)
-- [x] Workouts scheduled daily
-- [x] Vilde pickup (Feb 10) and Fåvang Taxi contact reminder added
-
-**Sub-Agent Architecture:**
-- [x] Code Agent (Kimi 2.5) — Fixed 3 broken pages
-- [x] DevOps Agent (Kimi 2.5) — Deployed dashboard, disabled auth
-- [x] Data Agent (Kimi 2.5) — Fetched 30-day Garmin data
-- [x] QA Agent (Kimi 2.5) — Verified all pages
-- [x] Research Agent (Kimi 2.5) — Video transcription
-
-**System Improvements:**
-- [x] FAILURE_LOG.md — Track failed attempts
-- [x] ORCHESTRATOR_HEALTH.md — Self-monitoring
-- [x] Sub-agent delegation working
-- [x] All agents using Kimi 2.5 exclusively
-
-### 🚀 Hybrid Browser Autonomy — CRITICAL PRIORITY
-
-**Why this matters:** I cannot debug iGMS, access logged-in services, or operate autonomously without this. It's blocking your accounting and all future browser-based work.
-
-**The Hybrid Approach:**
-```
-Peekaboo (launch/navigate) + Chrome Extension (debug/power) = Full Autonomy
-```
-
-**🔴 Immediate Tasks:**
-- [x] **Grant Peekaboo permissions** (Screen Recording + Accessibility) — ✅ DONE 2026-02-03
-- [x] **Pin OpenClaw extension** to Chrome toolbar — ✅ DONE 2026-02-03
-- [ ] **Test hybrid workflow** on iGMS OAuth — ⏳ IN PROGRESS
-- [x] **Document the workflow** in `skills/browser-autonomy/` — ✅ DONE
-- [ ] **Calibrate extension click coordinates** — ⏳ Need Chrome window position
-
-**📁 Documentation:** 
-- `skills/browser-autonomy/SKILL.md` — Skill definition
-- `skills/browser-autonomy/WORKFLOW-GUIDE.md` — Step-by-step workflow
-
-**🎯 Goal:** I can launch Chrome, navigate to any site, click the extension, and take full control without you micromanaging every click.
-
----
-
-### 🔧 System Improvements (IN PROGRESS)
-- [x] Create FAILURE_LOG.md — Track failed attempts to avoid repetition
-- [x] Create ORCHESTRATOR_HEALTH.md — Self-monitoring system
-- [ ] Implement context usage checks
-- [ ] Add escalation triggers
-- [ ] Create decision log format
-
-**Sub-Agent Architecture (Planned):**
-- [x] Code Agent (Kimi 2.5) — ✅ Active
-- [x] DevOps Agent (Kimi 2.5) — ✅ Active
-- [x] Research Agent (Kimi 2.5) — ✅ Active
-- [x] Data Agent (Kimi 2.5) — ✅ Active
-- [x] QA Agent (Kimi 2.5) — ✅ Active
-- [ ] Calendar Agent — Planned
-- [ ] Finance Agent — Planned
-
-**Garmin Integration:**
-- [x] Token persistence system — ✅ Implemented
-- [x] 30-day historical data upload — ✅ Complete (30 rows)
-- [x] Daily sync at 8:30 AM — ✅ Cron configured
-- [x] Verify Fitness Lab shows data — ✅ Confirmed
-
----
-
-## 🟡 NEXT — Backlog (Prioritized)
-
-### High Priority
-- [ ] **Fix Supabase RLS policy recursion error** (bookings query) — Kvitfjellhytter
-- [ ] **Hour Tracking Phase 1B** — Install PDF tools (`brew install poppler`)
-- [ ] Add property images to Kvitfjellhytter dashboard cards
-- [ ] Implement booking calendar view for dashboard
-
-### 🏗️ 3dje Boligsektor — Phase 2 Tomte-Sourcing (THIS WEEK)
-**🎯 Objective:** Build demo + presentation for apartment developers by Friday  
-**💰 Budget:** 5000 NOK initial development (charging them, not spending)  
-**🔄 Model:** Setup fee + monthly retainer  
-**⚠️ Note:** Manual processes OK — automatic owner lookup NOT priority
-
-**📁 START HERE:** `projects/3dje-boligsektor/README-BUILD-START.md`
-
-**📁 Build Documents Ready:**
-- `LEAN-ARCHITECTURE.md` — 5000 NOK system design
-- `SOP-MANUAL-VERIFICATION.md` — Quality assurance procedures  
-- `MVP-SCOPE-AND-PLAN.md` — 5-day build plan
-- `README-BUILD-START.md` — Quick start guide
-
-**🔴 DAY 1 (TODAY):**
-- [ ] Read `MVP-SCOPE-AND-PLAN.md`
-- [ ] Select 2 pilot municipalities from Phase 1 list
-- [ ] Set up Python environment (geopandas, shapely, requests)
-- [ ] Test Arealplaner.no WFS connection
-
-**🔴 DAY 2:**
-- [ ] Build kommuneplan fetcher (BO/BL zones)
-- [ ] Build reguleringsplan fetcher (vedtatt)
-- [ ] Test with Pilot 1
-
-**🔴 DAY 3:**
-- [ ] Implement differanse calculation
-- [ ] Add size filtering (>2000 m²)
-- [ ] Run on both pilots
-
-**🔴 DAY 4:**
-- [ ] Build scoring algorithm
-- [ ] Set up Airtable CRM
-- [ ] Pre-screen top 20 lots
-
-**🔴 DAY 5 (FRIDAY — PRESENTATION):**
-- [ ] Complete SOPs on top 10 lots
-- [ ] Build presentation deck
-- [ ] Demo for apartment developers
-
-**📋 Presentation Must Include:**
-- [ ] How differanse works (kommuneplan − reguleringsplan = opportunity)
-- [ ] Demo: Actual lots in pilot municipalities
-- [ ] Manual verification process (quality assurance)
-- [ ] Pricing: 5000 NOK setup + monthly retainer
-- [ ] Value prop: "We find the lots you can't find manually"
-
-### Medium Priority  
-- [ ] **The Observatory** — Provide Garmin credentials + Supabase project details (see Telegram report)
-- [ ] **YouTube Content System** — Choose first video topic & create script outline
-- [ ] **Morning Brief System** — Daily 8 AM automation
-- [ ] **Social Listening Research** — Reddit/X trending topics
-- [ ] **AI Company Management Research** — Deep analysis of AI tools
-
-### Low Priority
-- [ ] Treffen Timesheet System (B2B SaaS idea)
-- [ ] YouTube Content System setup
-- [ ] Invoice generation for hour tracking
-
----
-
-## 🟢 DONE — Recently Completed
-
-| Date | Task | Project |
-|------|------|---------|
-| 2026-02-01 | **3dje Boligsektor API Deep Research** — Kartverket, SSB, GeoNorge, Architecture | 3dje Boligsektor |
-| 2026-02-01 | **3dje Boligsektor Master Synthesis** — Complete system design & roadmap | 3dje Boligsektor |
-| 2026-02-01 | Migrated from old clawd workspace | System |
-| 2026-01-30 | Cleaned up scattered task files | System |
-| 2026-01-28 | Kvitfjellhytter dashboard UI redesign | Kvitfjellhytter |
-| 2026-01-28 | Deployed dashboard to Vercel | Kvitfjellhytter |
-| 2026-01-28 | iGMS OAuth flow implemented | Kvitfjellhytter |
-
----
-
-## 📋 Task Sources
-
-1. **You tell me** — "Add X to my todo list"
-2. **Projects need work** — I add next steps
-3. **Research completes** — Findings become actionable tasks
-4. **Heartbeat checks** — Automated task advancement
-
-**No other task lists exist.** If you see tasks elsewhere, tell me and I'll consolidate.
-
----
-
-*Last updated: 2026-02-01*  
-*Next review: Daily*
+- [x] Observatory: Create Supabase tables | ID: 79df11ec-5d3d-4fab-a9c0-166274134f16
+- [x] Set up Python environment (geopandas, shapely) | ID: 4c7d0fbb-2efc-40c3-8836-84cef12227c3
+- [x] Select 2 pilot municipalities | ID: 09c105e0-447d-4138-9f04-a84122c7b4b3
+- [x] Read MVP-SCOPE-AND-PLAN.md | ID: 8a42eeed-28f3-463f-aa6a-e27e7468bd03
+- [x] 3dje: Test Arealplaner.no WFS connection | ID: 905544a5-23a8-4e7f-b654-8a1a3b28f847
+- [x] 3dje: Set up Python environment | ID: ee8850c6-a2d6-4491-ada7-50ee78ad3855
+- [x] 3dje: Select 2 pilot municipalities | ID: 49f23dd5-7f0b-40d1-a6dd-72e4ef6f4a54
+- [x] 3dje: Read MVP-SCOPE-AND-PLAN.md | ID: 73657dfa-002d-49bf-9a51-055cdf324392
+- [x] Observatory: Provide Garmin credentials | ID: 6b819a82-4a86-4bb5-901e-01666b7af528
+- [x] Test Garmin Connect auth with credentials | ID: 235e9c91-21db-4ce9-8308-a5eed6b89120
+- [x] Fix Supabase RLS policy recursion error | ID: e7b890d4-8616-476b-b3a3-165e79f844b3
+- [x] Build Kanban board UI with drag-and-drop | ID: 9ba2255a-c692-457b-b9c9-9d850318df01
+- [x] Fix Supabase RLS policy recursion error | ID: 89c770be-8dfb-4de0-b66a-eba1cb1a075c
+- [x] Apply for Kartverket Matrikkel agreement | ID: 7d8e855b-bca4-4b0a-9602-d74319e294a8
+- [x] Apply for Kartverket Matrikkel agreement | ID: 441e2c67-7cc0-4c69-a97c-fed22a78a1f9
