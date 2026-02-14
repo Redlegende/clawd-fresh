@@ -8,7 +8,7 @@ import {
   Wallet, TrendingUp, Clock, CheckCircle, Plus, RefreshCw, Building2, Truck,
   UtensilsCrossed, Briefcase, Download, Calendar, FileText, ChevronDown,
   MoreHorizontal, CheckCircle2, CircleDollarSign, Calculator, Receipt,
-  Copy, ChevronLeft, ChevronRight, FileCheck
+  Copy, ChevronLeft, ChevronRight, FileCheck, Pencil, Trash2, X, Check
 } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -49,20 +49,29 @@ function getMonthKey(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
 }
 
-// Generate month options (last 12 months + future 3)
-function getMonthOptions() {
-  const months = []
+// Generate month options dynamically from data + future 3 months
+function getMonthOptions(entries: any[]) {
+  const monthSet = new Set<string>()
   const now = new Date()
-  for (let i = -12; i <= 3; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() + i, 1)
-    const value = getMonthKey(d)
-    const label = d.toLocaleDateString('no-NO', { month: 'long', year: 'numeric' })
-    months.push({ value, label })
-  }
-  return months.reverse()
-}
 
-const MONTH_OPTIONS = getMonthOptions()
+  // Always include current month + 3 future months
+  for (let i = 0; i <= 3; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1)
+    monthSet.add(getMonthKey(d))
+  }
+
+  // Include all months that have data
+  entries.forEach(e => {
+    if (e.date) monthSet.add(e.date.substring(0, 7))
+  })
+
+  return Array.from(monthSet)
+    .sort((a, b) => b.localeCompare(a))
+    .map(value => ({
+      value,
+      label: formatMonth(value)
+    }))
+}
 
 export default function FinancePage() {
   const [entries, setEntries] = useState<any[]>([])
@@ -73,6 +82,8 @@ export default function FinancePage() {
   const [showInvoiceModal, setShowInvoiceModal] = useState(false)
   const [saving, setSaving] = useState(false)
   const [copiedInvoice, setCopiedInvoice] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editData, setEditData] = useState<any>({})
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     source: 'Fåvang Varetaxi',
@@ -98,6 +109,9 @@ export default function FinancePage() {
     setLoading(false)
   }
 
+  // Dynamic month options based on actual data
+  const monthOptions = useMemo(() => getMonthOptions(entries), [entries])
+
   // Navigate months
   const navigateMonth = (dir: -1 | 1) => {
     const [y, m] = selectedMonth.split('-').map(Number)
@@ -107,12 +121,20 @@ export default function FinancePage() {
 
   // Filter by workplace and month
   const filteredEntries = useMemo(() => {
-    return entries.filter(e => {
+    const filtered = entries.filter(e => {
       const matchesWorkplace = activeTab === 'all' || e.source === activeTab
       const entryMonth = e.date.substring(0, 7)
       const matchesMonth = entryMonth === selectedMonth
       return matchesWorkplace && matchesMonth
     })
+    console.log('[Finance] Filtering:', {
+      activeTab,
+      selectedMonth,
+      totalEntries: entries.length,
+      filteredCount: filtered.length,
+      sample: filtered[0]
+    })
+    return filtered
   }, [entries, activeTab, selectedMonth])
 
   // Calculate stats
@@ -305,6 +327,67 @@ export default function FinancePage() {
     }
   }
 
+  // Start editing an entry inline
+  const startEditing = (entry: any) => {
+    setEditingId(entry.id)
+    setEditData({
+      date: entry.date,
+      hours: String(entry.hours),
+      rate_nok: String(entry.rate_nok),
+      start_time: entry.start_time?.slice(0, 5) || '',
+      end_time: entry.end_time?.slice(0, 5) || '',
+      description: entry.description || '',
+      source: entry.source,
+      business_type: entry.business_type || 'day',
+    })
+  }
+
+  const saveEdit = async () => {
+    if (!editingId) return
+    try {
+      const hours = parseFloat(editData.hours)
+      const rate = parseFloat(editData.rate_nok)
+      const mvaRate = RATES[editData.source]?.mva || 1.25
+      const { error } = await supabase
+        .from('finance_entries')
+        .update({
+          date: editData.date,
+          hours,
+          rate_nok: rate,
+          mva_rate: mvaRate,
+          start_time: editData.start_time || null,
+          end_time: editData.end_time || null,
+          description: editData.description || null,
+          source: editData.source,
+          business_type: editData.business_type,
+        })
+        .eq('id', editingId)
+      if (error) throw error
+      setEditingId(null)
+      await fetchData()
+    } catch (error) {
+      console.error('Failed to save edit:', error)
+    }
+  }
+
+  const cancelEdit = () => {
+    setEditingId(null)
+    setEditData({})
+  }
+
+  const deleteEntry = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('finance_entries')
+        .delete()
+        .eq('id', id)
+      if (error) throw error
+      await fetchData()
+    } catch (error) {
+      console.error('Failed to delete:', error)
+    }
+  }
+
   // Generate invoice text for accounting software
   const generateInvoiceText = () => {
     // Group entries by source for the selected month
@@ -384,7 +467,7 @@ export default function FinancePage() {
   }
 
   const downloadStatement = () => {
-    const monthLabel = MONTH_OPTIONS.find(m => m.value === selectedMonth)?.label || selectedMonth
+    const monthLabel = monthOptions.find(m => m.value === selectedMonth)?.label || selectedMonth
     const workplaceLabel = WORKPLACES.find(w => w.id === activeTab)?.label || activeTab
 
     const csvRows = [
@@ -465,7 +548,7 @@ export default function FinancePage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {MONTH_OPTIONS.map(m => (
+              {monthOptions.map(m => (
                 <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
               ))}
             </SelectContent>
@@ -651,7 +734,7 @@ export default function FinancePage() {
                   <tr className="border-b">
                     <th className="text-left py-2">Date</th>
                     <th className="text-left py-2">Source</th>
-                    <th className="text-left py-2">Time</th>
+                    <th className="text-left py-2">Description</th>
                     <th className="text-center py-2">Hours</th>
                     <th className="text-right py-2">Rate</th>
                     <th className="text-right py-2">Ex-MVA</th>
@@ -663,45 +746,104 @@ export default function FinancePage() {
                 <tbody>
                   {filteredEntries.map((entry: any) => (
                     <tr key={entry.id} className={`border-b last:border-0 ${entry.paid ? 'opacity-60' : ''}`}>
-                      <td className="py-2">{new Date(entry.date).toLocaleDateString('no-NO', { day: '2-digit', month: '2-digit' })}</td>
-                      <td className="py-2">
-                        <Badge variant="outline" className="text-xs">{entry.source}</Badge>
-                      </td>
-                      <td className="py-2 text-muted-foreground text-xs">
-                        {entry.start_time && entry.end_time
-                          ? `${entry.start_time.slice(0,5)}–${entry.end_time.slice(0,5)}`
-                          : entry.description || '-'}
-                      </td>
-                      <td className="text-center py-2">{entry.hours}t</td>
-                      <td className="text-right py-2 text-muted-foreground">{Number(entry.rate_nok)} kr/t</td>
-                      <td className="text-right py-2">{Number(entry.subtotal_nok).toLocaleString('no-NO')} kr</td>
-                      <td className="text-right py-2 font-medium">{Number(entry.total_nok).toLocaleString('no-NO')} kr</td>
-                      <td className="text-center py-2">
-                        {entry.paid ? (
-                          <Badge className="bg-green-500/20 text-green-400">Paid</Badge>
-                        ) : entry.invoiced ? (
-                          <Badge className="bg-amber-500/20 text-amber-400">Invoiced</Badge>
-                        ) : (
-                          <Badge variant="secondary">Pending</Badge>
-                        )}
-                      </td>
-                      <td className="text-right py-2">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => toggleInvoiced(entry)}>
-                              {entry.invoiced ? 'Mark as Not Invoiced' : 'Mark as Invoiced'}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => togglePaid(entry)}>
-                              {entry.paid ? 'Mark as Unpaid' : 'Mark as Paid'}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </td>
+                      {editingId === entry.id ? (
+                        <>
+                          <td className="py-1">
+                            <Input type="date" className="h-7 text-xs w-[120px]" value={editData.date} onChange={e => setEditData((p: any) => ({ ...p, date: e.target.value }))} />
+                          </td>
+                          <td className="py-1">
+                            <Select value={editData.source} onValueChange={v => setEditData((p: any) => ({ ...p, source: v }))}>
+                              <SelectTrigger className="h-7 text-xs w-[130px]"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Fåvang Varetaxi">Fåvang Varetaxi</SelectItem>
+                                <SelectItem value="Treffen">Treffen</SelectItem>
+                                <SelectItem value="Kvitfjellhytter">Kvitfjellhytter</SelectItem>
+                                <SelectItem value="Other">Other</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </td>
+                          <td className="py-1">
+                            <div className="flex gap-1">
+                              <Input type="time" className="h-7 text-xs w-[80px]" value={editData.start_time} onChange={e => setEditData((p: any) => ({ ...p, start_time: e.target.value }))} />
+                              <Input type="time" className="h-7 text-xs w-[80px]" value={editData.end_time} onChange={e => setEditData((p: any) => ({ ...p, end_time: e.target.value }))} />
+                            </div>
+                          </td>
+                          <td className="py-1">
+                            <Input type="number" step="0.25" className="h-7 text-xs w-[60px] text-center" value={editData.hours} onChange={e => setEditData((p: any) => ({ ...p, hours: e.target.value }))} />
+                          </td>
+                          <td className="py-1">
+                            <Input type="number" className="h-7 text-xs w-[70px] text-right" value={editData.rate_nok} onChange={e => setEditData((p: any) => ({ ...p, rate_nok: e.target.value }))} />
+                          </td>
+                          <td className="text-right py-1 text-xs text-muted-foreground">
+                            {(parseFloat(editData.hours || '0') * parseFloat(editData.rate_nok || '0')).toLocaleString('no-NO')} kr
+                          </td>
+                          <td className="text-right py-1 text-xs font-medium">
+                            {(parseFloat(editData.hours || '0') * parseFloat(editData.rate_nok || '0') * (RATES[editData.source]?.mva || 1.25)).toLocaleString('no-NO')} kr
+                          </td>
+                          <td className="py-1"></td>
+                          <td className="text-right py-1">
+                            <div className="flex gap-1 justify-end">
+                              <Button variant="ghost" size="sm" onClick={saveEdit} className="h-7 w-7 p-0 text-green-400 hover:text-green-300">
+                                <Check className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={cancelEdit} className="h-7 w-7 p-0 text-red-400 hover:text-red-300">
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td className="py-2">{new Date(entry.date).toLocaleDateString('no-NO', { day: '2-digit', month: '2-digit' })}</td>
+                          <td className="py-2">
+                            <Badge variant="outline" className="text-xs">{entry.source}</Badge>
+                          </td>
+                          <td className="py-2 text-muted-foreground text-xs">
+                            <div>{entry.description || '-'}</div>
+                            {entry.start_time && entry.end_time && (
+                              <div className="text-[10px] opacity-60">{entry.start_time.slice(0,5)}–{entry.end_time.slice(0,5)}</div>
+                            )}
+                          </td>
+                          <td className="text-center py-2">{entry.hours}t</td>
+                          <td className="text-right py-2 text-muted-foreground">{Number(entry.rate_nok)} kr/t</td>
+                          <td className="text-right py-2">{Number(entry.subtotal_nok).toLocaleString('no-NO')} kr</td>
+                          <td className="text-right py-2 font-medium">{Number(entry.total_nok).toLocaleString('no-NO')} kr</td>
+                          <td className="text-center py-2">
+                            {entry.paid ? (
+                              <Badge className="bg-green-500/20 text-green-400">Paid</Badge>
+                            ) : entry.invoiced ? (
+                              <Badge className="bg-amber-500/20 text-amber-400">Invoiced</Badge>
+                            ) : (
+                              <Badge variant="secondary">Pending</Badge>
+                            )}
+                          </td>
+                          <td className="text-right py-2">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => startEditing(entry)}>
+                                  <Pencil className="h-4 w-4 mr-2" />
+                                  Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => toggleInvoiced(entry)}>
+                                  {entry.invoiced ? 'Mark as Not Invoiced' : 'Mark as Invoiced'}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => togglePaid(entry)}>
+                                  {entry.paid ? 'Mark as Unpaid' : 'Mark as Paid'}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => deleteEntry(entry.id)} className="text-red-400">
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </td>
+                        </>
+                      )}
                     </tr>
                   ))}
                 </tbody>
