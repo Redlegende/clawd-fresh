@@ -1,0 +1,54 @@
+{
+  "links": {
+    "observatory": {
+      "url": "https://the-observatory-beta.vercel.app",
+      "aliases": ["obs", "dashboard"],
+      "description": "Personal dashboard - Mission Control, Kanban, Fitness, Finance, Research"
+    },
+    "observatory-old": {
+      "url": "https://the-observatory-lxb444gor-redlegendes-projects.vercel.app",
+      "aliases": [],
+      "description": "Observatory legacy URL"
+    },
+    "kvitfjell": {
+      "url": "https://app-pink-eight-65.vercel.app",
+      "aliases": ["kvitfjellhytter", "cabins"],
+      "description": "Kvitfjellhytter owner dashboard"
+    },
+    "folio": {
+      "url": "https://app.folio.no",
+      "aliases": ["accounting", "regnskap"],
+      "description": "Folio accounting and bookkeeping"
+    },
+    "supabase": {
+      "url": "https://supabase.com/dashboard/project/vhrmxtolrrcrhrxljemp",
+      "aliases": ["db", "database"],
+      "description": "Supabase dashboard for The Observatory database"
+    },
+    "vercel": {
+      "url": "https://vercel.com/redlegendes",
+      "aliases": ["deploy"],
+      "description": "Vercel deployments"
+    },
+    "github": {
+      "url": "https://github.com/jakobbakken",
+      "aliases": ["gh", "repos"],
+      "description": "GitHub repositories"
+    },
+    "clawhub": {
+      "url": "https://clawhub.com",
+      "aliases": ["skills", "openclaw"],
+      "description": "OpenClaw skills marketplace"
+    },
+    "byterover": {
+      "url": "https://app.byterover.dev/Openclaw/Freddy",
+      "aliases": ["brv", "memory"],
+      "description": "ByteRover knowledge base"
+    },
+    "hours": {
+      "url": "file:///Users/jakobbakken/clawd-fresh/hours/",
+      "aliases": ["timer", "faktura"],
+      "description": "Local hour tracking files"
+    }
+  }
+}

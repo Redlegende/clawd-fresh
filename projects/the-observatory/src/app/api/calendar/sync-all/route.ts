@@ -138,7 +138,8 @@ async function syncCalendar(calendar: any) {
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const sixtyDaysLater = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000);
 
-  const calendarsToSync = calendar.calendars || [{ id: 'primary' }];
+  const allCals = calendar.calendars || [{ id: 'primary', selected: true }];
+  const calendarsToSync = allCals.filter((c: any) => c.selected !== false);
   let totalEvents = 0;
   let errors: string[] = [];
 

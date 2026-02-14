@@ -1,80 +1,108 @@
 #!/usr/bin/env python3
-"""Garmin fetch with token persistence - NO MFA NEEDED"""
+"""Garmin fetch with token persistence + Supabase upload"""
 from garminconnect import Garmin
 import json
 import os
+import sys
 from datetime import datetime, timedelta
 
 EMAIL = "kontakt@kvitfjellhytter.no"
 PASSWORD = "Gladiator12!"
-TOKEN_FILE = ".garmin_tokens.json"
+TOKEN_DIR = ".garth_tokens"
+MFA_FILE = ".mfa_code.txt"
 
-def load_tokens():
-    """Load saved tokens if they exist"""
-    if os.path.exists(TOKEN_FILE):
-        try:
-            with open(TOKEN_FILE, 'r') as f:
-                return json.load(f)
-        except:
-            return None
+SUPABASE_URL = "https://vhrmxtolrrcrhrxljemp.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZocm14dG9scnJjcmhyeGxqZW1wIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTk3NDAwNCwiZXhwIjoyMDg1NTUwMDA0fQ.jnZEhrFl823cgQHubVZv_-qRwvS8aO90Yosp_jxY2cs"
+
+def get_mfa_code():
+    """Get MFA from file or env"""
+    mfa = os.environ.get('GARMIN_MFA')
+    if mfa:
+        return mfa
+    if os.path.exists(MFA_FILE):
+        with open(MFA_FILE, 'r') as f:
+            return f.read().strip()
     return None
 
 def save_tokens(client):
-    """Save OAuth tokens to file"""
+    """Save OAuth tokens using garth's built-in serialization"""
     try:
-        tokens = {
-            'oauth1_token': str(client.garth.oauth1_token),
-            'oauth2_token': str(client.garth.oauth2_token),
-            'saved_at': datetime.now().isoformat()
-        }
-        with open(TOKEN_FILE, 'w') as f:
-            json.dump(tokens, f, indent=2)
-        print(f"💾 Tokens saved")
+        client.garth.dump(TOKEN_DIR)
+        print(f"💾 Tokens saved to {TOKEN_DIR}/")
     except Exception as e:
         print(f"⚠️ Could not save tokens: {e}")
 
 def login_with_tokens():
     """Try to login with saved tokens first"""
-    tokens = load_tokens()
-    if not tokens:
+    if not os.path.exists(TOKEN_DIR):
         print("ℹ️ No saved tokens found")
         return None
     
     print("🔄 Trying saved tokens...")
-    client = Garmin(EMAIL, PASSWORD)
-    
     try:
-        # Restore tokens
-        from garth.http import OAuth1Token, OAuth2Token
-        
-        # Parse the saved token strings
-        oauth1_str = tokens['oauth1_token']
-        oauth2_str = tokens['oauth2_token']
-        
-        # For now, just try a direct login test
-        client.garth.oauth1_token = oauth1_str
-        client.garth.oauth2_token = oauth2_str
-        
-        # Test if tokens work
-        client.get_full_name()
-        print("✅ Saved tokens worked!")
+        client = Garmin(EMAIL, PASSWORD)
+        client.garth.load(TOKEN_DIR)
+        name = client.get_full_name()
+        print(f"✅ Saved tokens worked! ({name})")
+        save_tokens(client)  # Refresh saved tokens
         return client
-        
     except Exception as e:
         print(f"⚠️ Saved tokens failed: {e}")
-        print("🔐 Will need MFA for fresh login")
+        return None
+
+def login_with_mfa():
+    """Login with MFA code"""
+    mfa = get_mfa_code()
+    if not mfa:
+        return None
+    
+    print(f"🔐 Logging in with MFA code: {mfa}")
+    client = Garmin(EMAIL, PASSWORD)
+    
+    import garth.sso as sso_module
+    original_login = sso_module.login
+    def patched_login(username, password, client=None, prompt_mfa=None):
+        return original_login(username, password, client=client, prompt_mfa=lambda: mfa)
+    sso_module.login = patched_login
+    try:
+        client.login()
+        print("✅ Login successful with MFA!")
+        save_tokens(client)
+        # Cleanup MFA file
+        if os.path.exists(MFA_FILE):
+            os.remove(MFA_FILE)
+        return client
+    except Exception as e:
+        print(f"❌ MFA login failed: {e}")
+        return None
+    finally:
+        sso_module.login = original_login
+
+def login_fresh():
+    """Try direct login without MFA"""
+    print("🔄 Trying direct login (no MFA)...")
+    client = Garmin(EMAIL, PASSWORD)
+    try:
+        client.login()
+        print("✅ Direct login successful!")
+        save_tokens(client)
+        return client
+    except Exception as e:
+        print(f"⚠️ Direct login failed: {e}")
         return None
 
 def fetch_data(days=7):
     """Fetch fitness data from Garmin"""
     
-    # Try tokens first
+    # Try methods in order: saved tokens → direct login → MFA
     client = login_with_tokens()
-    
     if not client:
-        # Need fresh login - but we should NEVER get here if tokens are working
-        print("❌ No valid tokens and no MFA provided")
-        print("📧 Check for MFA email, or tokens need refresh")
+        client = login_fresh()
+    if not client:
+        client = login_with_mfa()
+    if not client:
+        print("❌ All login methods failed")
+        print(f"📧 Create {MFA_FILE} with your 6-digit MFA code, then re-run")
         return None
     
     print(f"👤 Authenticated: {client.get_full_name()}")
@@ -144,13 +172,42 @@ def fetch_data(days=7):
     
     return data
 
+def upload_to_supabase(data):
+    """Upload data to Supabase fitness_metrics table"""
+    print(f"\n📤 Uploading {len(data)} days to Supabase...")
+    try:
+        from supabase import create_client
+        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+        
+        records = []
+        for d in data:
+            if any([d['body_battery'], d['sleep_hours'], d['resting_hr'], d['steps']]):
+                records.append(d)
+        
+        if not records:
+            print("⚠️ No records with data to upload")
+            return 0
+        
+        result = supabase.table('fitness_metrics').upsert(records).execute()
+        print(f"✅ Uploaded {len(records)} records to Supabase")
+        return len(records)
+    except Exception as e:
+        print(f"❌ Upload error: {e}")
+        return 0
+
 if __name__ == '__main__':
-    # Daily sync - uses saved tokens, NO MFA
-    data = fetch_data(days=7)  # Last 7 days for daily sync
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--days', type=int, default=7, help='Number of days to fetch')
+    args = parser.parse_args()
+    
+    data = fetch_data(days=args.days)
     
     if data:
-        print("\n🎉 Daily sync complete!")
-        print("📤 Next: Upload to Supabase")
+        uploaded = upload_to_supabase(data)
+        print(f"\n🎉 Daily sync complete! ({uploaded} records uploaded)")
+        sys.exit(0)
     else:
         print("\n❌ Daily sync failed")
-        print("🔧 Manual intervention needed")
+        print(f"🔧 Create {MFA_FILE} with your 6-digit code and re-run")
+        sys.exit(1)

@@ -33,7 +33,10 @@ export function TaskModal({ open, onOpenChange, projects, onTaskCreated }: TaskM
     priority: 'medium',
     status: 'todo',
     project_id: 'none',
-    due_date: ''
+    due_date: '',
+    assigned_to: 'jakob',
+    is_recurring: false,
+    recurrence_interval: ''
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,6 +54,9 @@ export function TaskModal({ open, onOpenChange, projects, onTaskCreated }: TaskM
           status: formData.status,
           project_id: formData.project_id === 'none' ? null : formData.project_id || null,
           due_date: formData.due_date || null,
+          assigned_to: formData.assigned_to,
+          is_recurring: formData.is_recurring,
+          recurrence_interval: formData.is_recurring ? formData.recurrence_interval || null : null,
           source: 'manual',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -67,7 +73,10 @@ export function TaskModal({ open, onOpenChange, projects, onTaskCreated }: TaskM
         priority: 'medium',
         status: 'todo',
         project_id: 'none',
-        due_date: ''
+        due_date: '',
+        assigned_to: 'jakob',
+        is_recurring: false,
+        recurrence_interval: ''
       })
       onOpenChange(false)
     } catch (error) {
@@ -143,6 +152,7 @@ export function TaskModal({ open, onOpenChange, projects, onTaskCreated }: TaskM
                   <SelectItem value="todo">To Do</SelectItem>
                   <SelectItem value="in_progress">In Progress</SelectItem>
                   <SelectItem value="review">Review</SelectItem>
+                  <SelectItem value="ai_queue">🤖 AI Queue</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -177,6 +187,48 @@ export function TaskModal({ open, onOpenChange, projects, onTaskCreated }: TaskM
                 value={formData.due_date}
                 onChange={(e) => setFormData(prev => ({ ...prev, due_date: e.target.value }))}
               />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Assigned To</Label>
+              <Select
+                value={formData.assigned_to}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, assigned_to: value, status: value === 'fred' ? 'ai_queue' : prev.status }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="jakob">Jakob</SelectItem>
+                  <SelectItem value="fred">🤖 Fred (AI)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Recurring</Label>
+              <Select
+                value={formData.is_recurring ? formData.recurrence_interval || 'daily' : 'none'}
+                onValueChange={(value) => {
+                  if (value === 'none') {
+                    setFormData(prev => ({ ...prev, is_recurring: false, recurrence_interval: '' }))
+                  } else {
+                    setFormData(prev => ({ ...prev, is_recurring: true, recurrence_interval: value }))
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">One-time</SelectItem>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, RefreshCw, CheckCircle, AlertCircle, Link2, Unlink, Bell, Settings } from 'lucide-react';
+import { Calendar, RefreshCw, CheckCircle, AlertCircle, Link2, Unlink, Bell, Settings, Eye, EyeOff } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -20,7 +21,7 @@ interface CalendarConnection {
   last_synced_at: string | null;
   webhook_expiration: string | null;
   scopes: string[];
-  calendars: { id: string; summary: string; primary: boolean }[];
+  calendars: { id: string; summary: string; primary: boolean; selected?: boolean }[];
 }
 
 export default function SettingsPage() {
@@ -29,6 +30,7 @@ export default function SettingsPage() {
   const [syncing, setSyncing] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [toggling, setToggling] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -207,18 +209,65 @@ export default function SettingsPage() {
               </div>
 
               {connection.calendars && connection.calendars.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Connected Calendars:</p>
-                  <div className="flex flex-wrap gap-2">
+                <div className="space-y-3">
+                  <p className="text-sm font-medium">Calendars to Sync:</p>
+                  <div className="space-y-2">
                     {connection.calendars.map((cal) => (
-                      <Badge key={cal.id} variant="outline">
-                        {cal.summary}
-                        {cal.primary && (
-                          <span className="ml-1 text-cyan-500">★</span>
-                        )}
-                      </Badge>
+                      <div
+                        key={cal.id}
+                        className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+                          cal.selected !== false
+                            ? 'bg-gray-50 dark:bg-gray-800 border-border'
+                            : 'bg-gray-50/50 dark:bg-gray-800/30 border-border/50 opacity-60'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          {cal.selected !== false ? (
+                            <Eye className="h-4 w-4 text-cyan-500 shrink-0" />
+                          ) : (
+                            <EyeOff className="h-4 w-4 text-muted-foreground shrink-0" />
+                          )}
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">
+                              {cal.summary}
+                              {cal.primary && (
+                                <span className="ml-1 text-cyan-500">★</span>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                        <Switch
+                          checked={cal.selected !== false}
+                          disabled={toggling === cal.id}
+                          onCheckedChange={async (checked: boolean) => {
+                            setToggling(cal.id);
+                            try {
+                              const res = await fetch('/api/calendar/toggle', {
+                                method: 'PATCH',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  calendarId: connection.id,
+                                  subCalendarId: cal.id,
+                                  selected: checked,
+                                }),
+                              });
+                              if (res.ok) {
+                                const data = await res.json();
+                                setConnection(prev => prev ? { ...prev, calendars: data.calendars } : null);
+                              }
+                            } catch (err) {
+                              console.error('Toggle failed:', err);
+                            } finally {
+                              setToggling(null);
+                            }
+                          }}
+                        />
+                      </div>
                     ))}
                   </div>
+                  <p className="text-xs text-muted-foreground">
+                    Only selected calendars will be synced. Changes take effect on next sync.
+                  </p>
                 </div>
               )}
 

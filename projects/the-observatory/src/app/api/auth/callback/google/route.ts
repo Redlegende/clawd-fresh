@@ -49,7 +49,6 @@ export async function GET(request: NextRequest) {
       .upsert({
         user_id: 'b4004bf7-9b69-47e5-8032-c0f39c654a61',
         provider: 'google',
-        provider_account_id: userInfo.id,
         external_id: primaryCal?.id,
         name: primaryCal?.summary || 'Google Calendar',
         email: userInfo.email,

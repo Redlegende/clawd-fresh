@@ -27,12 +27,15 @@ interface Task {
   id: string
   title: string
   description?: string
-  status: 'backlog' | 'todo' | 'in_progress' | 'review' | 'done' | 'archived'
+  status: 'backlog' | 'todo' | 'in_progress' | 'review' | 'ai_queue' | 'done' | 'archived'
   priority: 'low' | 'medium' | 'high' | 'urgent'
   project_id?: string
   due_date?: string
   tags?: string[]
   comment_count?: number
+  assigned_to?: 'jakob' | 'fred'
+  is_recurring?: boolean
+  recurrence_rule?: string
   created_at: string
   updated_at: string
 }
@@ -45,13 +48,14 @@ interface TaskDetailModalProps {
   onTaskUpdated?: (task: Task) => void
 }
 
-const STATUS_FLOW: Task['status'][] = ['backlog', 'todo', 'in_progress', 'review', 'done']
+const STATUS_FLOW: Task['status'][] = ['backlog', 'todo', 'in_progress', 'review', 'ai_queue', 'done']
 
 const STATUS_LABELS: Record<string, string> = {
   backlog: 'Backlog',
   todo: 'To Do',
   in_progress: 'In Progress',
   review: 'Review',
+  ai_queue: '🤖 AI Queue',
   done: 'Done',
   archived: 'Trash'
 }
@@ -291,6 +295,7 @@ export function TaskDetailModal({
       case 'done': return 'bg-green-500/20 text-green-400'
       case 'in_progress': return 'bg-orange-500/20 text-orange-400'
       case 'review': return 'bg-purple-500/20 text-purple-400'
+      case 'ai_queue': return 'bg-cyan-500/20 text-cyan-400'
       case 'todo': return 'bg-blue-500/20 text-blue-400'
       default: return 'bg-gray-500/20 text-gray-400'
     }

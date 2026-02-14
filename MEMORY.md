@@ -24,7 +24,7 @@ Curated memories that persist across sessions. For raw daily logs, see `memory/Y
 - **Storage: Supabase (not S3)** - All PDFs, files in Supabase storage
 - Location: Fåvang, Norway
 - Design system: Clean modern SaaS, cyan primary (#0891B2), Plus Jakarta Sans
-- **Status:** UI deployed, iGMS OAuth code ready, needs connection testing
+- **Status:** ✅ OAuth connected, 30 bookings synced, bookings table created
 
 **🏠 Cabins & Management Rules (CRITICAL):**
 - **Cabins:** cabin 12, cabin 13, cabin 22, cabin 23, Ringebuhuset
@@ -145,7 +145,7 @@ Curated memories that persist across sessions. For raw daily logs, see `memory/Y
 | Calendar (Google) | ⏳ Planned | Need new calendar for Freddy |
 | Telegram | ✅ Working | For notifications |
 | Kimi K2.5 | ✅ Active | `moonshot/kimi-k2.5` primary |
-| **iGMS** | ✅ Code Ready | OAuth flow implemented, needs connection test |
+| **iGMS** | ✅ Connected | OAuth working, 30 bookings synced, displaying in dashboard |
 | **Vercel** | ✅ Active | Kvitfjellhytter dashboard deployed |
 | **Supabase** | ✅ Active | MCP connected, all storage there |
 | **Project Automation** | ✅ READY | Full stack auto-setup (Supabase + Next.js + Vercel + browser verify) |
@@ -163,6 +163,7 @@ Curated memories that persist across sessions. For raw daily logs, see `memory/Y
 | clawddocs | OpenClaw documentation expert | `skills/clawddocs-1.2.2/` |
 | supabase | Database operations, SQL queries, CRUD | `skills/supabase/` |
 | **browser-autonomy** | **Autonomous browser control** — Chrome Extension + Peekaboo for logged-in sites like iGMS | `skills/browser-autonomy/` |
+| **links** | **Quick bookmarks** — Fast access to Observatory, Kvitfjellhytter, Folio, etc. | `skills/links/` |
 
 ---
 
@@ -298,6 +299,39 @@ Jakob's personal gut healing system based on Dr. William Davis's research.
 ---
 
 ## 📝 Recent Activity
+
+### 2026-02-08 — Observatory Major Restructure
+- ✅ **Kanban AI Queue** — New column for tasks Fred should do. Drag tasks to AI Queue. Support for recurring tasks (daily/weekly/monthly). Bot + Repeat icons on task cards.
+- ✅ **Calendar Page** — Full monthly calendar view at `/calendar`. Shows Google Calendar events + task deadlines. Day detail panel + upcoming 7 days sidebar.
+- ✅ **Fitness Lab Sync** — Added manual "Sync Garmin" button. Stale data warning banner when data > 1 day old. API at `/api/fitness/sync`. Currently 5 days stale (last Feb 3).
+- ✅ **Finance Workplace Tabs** — Filter by Fåvang Varetaxi / Treffen / Kvitfjellhytter / Other. Add Entry modal with auto-rate (day/night), shift type, time tracking. Full MVA calculation preview.
+- ✅ **Research from DB** — Replaced mock data with real Supabase queries. Shows active projects with health scores. Research notes with search + category filter.
+- ✅ **Sidebar** — Added Calendar link between Kanban and Fitness Lab.
+- ✅ **DB Migration** — Added `assigned_to`, `is_recurring`, `recurrence_rule`, `recurrence_interval`, `last_run_at`, `next_run_at` columns to tasks table.
+- 🎯 **Next:** Deploy to Vercel, run Garmin sync to get fresh data, populate research_notes table
+
+### 2026-02-06 — Kvitfjellhytter Dashboard FULLY FIXED & DEPLOYED
+- ✅ **Fixed bookings table schema** — recreated with proper columns matching dashboard expectations
+- ✅ **Updated sync route** — maps iGMS API data to dashboard schema correctly
+- ✅ **Fixed data fetching** — joins with properties table for property names
+- ✅ **Added sync button** — bookings page now has working sync button
+- ✅ **Deployed to Vercel** — live at https://app-pink-eight-65.vercel.app
+- ✅ **30 bookings synced** — all iGMS bookings now in Supabase and displaying
+- ✅ **Fixed guest names** — extracted from guest_uid (e.g., "john.doe@email.com" → "John")
+- ✅ **Linked properties** — populated properties table and linked bookings to them
+- ✅ **Created MASTER.md** — comprehensive documentation for AI development partner
+- 🎯 Next: Hand off to AI partner for UI/UX redesign
+
+### 2026-02-06 — Kvitfjellhytter Bookings Table & Page
+- ✅ Created `bookings` table in Supabase (16 columns, proper indexes)
+- ✅ Created `igms_properties` table for property sync
+- ✅ Built bookings page component (`/dashboard/bookings`)
+  - Stats cards (upcoming, guests, revenue)
+  - Sortable table with status badges
+  - Norwegian date/currency formatting
+- ✅ Built property sync API route (`/api/igms/properties`)
+- 📁 Files ready at: `projects/kvitfjellhytter/dashboard-bookings/`
+- 🎯 Next: Copy files to dashboard codebase, test with live data
 
 ### 2026-02-02 — Observatory FULLY OPERATIONAL
 - ✅ FIXED: Supabase table creation via Management API (was blocked by REST API limitations)

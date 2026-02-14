@@ -1,7 +1,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Activity, Wallet, Kanban, FileText, TrendingUp, CheckCircle2 } from "lucide-react"
+import { Activity, Wallet, Kanban, FileText, TrendingUp, CheckCircle2, AlertTriangle, Clock, ArrowRight } from "lucide-react"
 import { supabase, Project, Task } from "@/lib/supabase/client"
+import Link from 'next/link'
 
 async function getDashboardData() {
   // Fetch all data in parallel
@@ -34,6 +35,11 @@ async function getDashboardData() {
   
   const totalEarnings = finance?.reduce((sum, entry) => sum + (entry.total_nok || 0), 0) || 0
 
+  const today = new Date().toISOString().split('T')[0]
+  const overdueTasks = tasks?.filter(t => t.due_date && t.due_date < today && t.status !== 'done' && t.status !== 'archived') || []
+  const dueTodayTasks = tasks?.filter(t => t.due_date === today && t.status !== 'done' && t.status !== 'archived') || []
+  const inProgressTasks = tasks?.filter(t => t.status === 'in_progress') || []
+
   return {
     projects: projects || [],
     tasks: tasks || [],
@@ -44,7 +50,10 @@ async function getDashboardData() {
     vo2Max,
     totalEarnings,
     researchCount: research?.length || 0,
-    latestFitness
+    latestFitness,
+    overdueTasks,
+    dueTodayTasks,
+    inProgressTasks
   }
 }
 
@@ -117,18 +126,63 @@ export default async function MissionControl() {
         </Card>
       </div>
 
-      {/* Setup Complete Banner */}
-      <Card className="border-green-200 bg-green-50 dark:bg-green-950/20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-green-800 dark:text-green-200">
-            <CheckCircle2 className="h-5 w-5" />
-            ✅ Observatory Online
-          </CardTitle>
-          <CardDescription className="text-green-700 dark:text-green-300">
-            Connected to Supabase with live data from {data.projects.length} projects and {data.tasks.length} tasks.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      {/* Today's Focus */}
+      {(data.overdueTasks.length > 0 || data.dueTodayTasks.length > 0 || data.inProgressTasks.length > 0) && (
+        <Card className="border-cyan-500/20">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-cyan-400" />
+                Today&apos;s Focus
+              </span>
+              <Link href="/kanban" className="text-sm text-muted-foreground hover:text-cyan-400 flex items-center gap-1">
+                Open Kanban <ArrowRight className="h-3 w-3" />
+              </Link>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {data.overdueTasks.length > 0 && (
+              <div className="space-y-1">
+                {data.overdueTasks.map((t: Task) => (
+                  <div key={t.id} className="flex items-center justify-between p-2 rounded-md bg-red-500/10 border border-red-500/20">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="h-3.5 w-3.5 text-red-400" />
+                      <span className="text-sm">{t.title}</span>
+                    </div>
+                    <Badge variant="destructive" className="text-xs">overdue</Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+            {data.dueTodayTasks.length > 0 && (
+              <div className="space-y-1">
+                {data.dueTodayTasks.map((t: Task) => (
+                  <div key={t.id} className="flex items-center justify-between p-2 rounded-md bg-orange-500/10 border border-orange-500/20">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-3.5 w-3.5 text-orange-400" />
+                      <span className="text-sm">{t.title}</span>
+                    </div>
+                    <Badge className="text-xs bg-orange-500/20 text-orange-400 border-orange-500/50">due today</Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+            {data.inProgressTasks.length > 0 && (
+              <div className="space-y-1">
+                {data.inProgressTasks.map((t: Task) => (
+                  <div key={t.id} className="flex items-center justify-between p-2 rounded-md bg-blue-500/10 border border-blue-500/20">
+                    <div className="flex items-center gap-2">
+                      <Activity className="h-3.5 w-3.5 text-blue-400" />
+                      <span className="text-sm">{t.title}</span>
+                    </div>
+                    <Badge className="text-xs bg-blue-500/20 text-blue-400 border-blue-500/50">in progress</Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Quick Links */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

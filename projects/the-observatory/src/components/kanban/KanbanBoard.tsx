@@ -5,7 +5,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { MessageSquare } from 'lucide-react'
+import { MessageSquare, Repeat, Bot } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
 import { TaskDetailModal } from './TaskDetailModal'
 
@@ -17,12 +17,17 @@ export type Task = {
   id: string
   title: string
   description?: string
-  status: 'backlog' | 'todo' | 'in_progress' | 'review' | 'done' | 'archived'
+  status: 'backlog' | 'todo' | 'in_progress' | 'review' | 'ai_queue' | 'done' | 'archived'
   priority: 'low' | 'medium' | 'high' | 'urgent'
   project_id?: string
   due_date?: string
   tags?: string[]
   comment_count?: number
+  assigned_to?: 'jakob' | 'fred'
+  is_recurring?: boolean
+  recurrence_rule?: string
+  recurrence_interval?: string
+  next_run_at?: string
   created_at: string
   updated_at: string
 }
@@ -38,6 +43,7 @@ const columns: Column[] = [
   { id: 'todo', title: 'To Do', shortTitle: 'To Do' },
   { id: 'in_progress', title: 'In Progress', shortTitle: 'Doing' },
   { id: 'review', title: 'Review', shortTitle: 'Review' },
+  { id: 'ai_queue', title: '🤖 AI Queue', shortTitle: 'AI' },
   { id: 'done', title: 'Done', shortTitle: 'Done' },
 ]
 
@@ -56,6 +62,7 @@ function getColumnColor(columnId: string): string {
     case 'todo': return 'bg-[#0d1a2a] border-[#0088ff]'
     case 'in_progress': return 'bg-[#1a1408] border-[#ff8800]'
     case 'review': return 'bg-[#1a0d25] border-[#8855ff]'
+    case 'ai_queue': return 'bg-[#0d1a1a] border-[#00ffff]'
     case 'done': return 'bg-[#0d1a14] border-[#00ff88]'
     default: return 'bg-[#1a1a25] border-[#555588]'
   }
@@ -128,12 +135,24 @@ function TaskCard({ task, projectMap, onStatusChange, onTaskClick, index }: Task
                       )}
                     </div>
 
-                    {(task.comment_count || 0) > 0 && (
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <MessageSquare className="h-3 w-3" />
-                        <span className="text-xs">{task.comment_count}</span>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-1">
+                      {task.is_recurring && (
+                        <span aria-label={`Recurring: ${task.recurrence_interval || 'daily'}`}>
+                          <Repeat className="h-3 w-3 text-cyan-400" />
+                        </span>
+                      )}
+                      {task.assigned_to === 'fred' && (
+                        <span aria-label="Assigned to Fred (AI)">
+                          <Bot className="h-3 w-3 text-purple-400" />
+                        </span>
+                      )}
+                      {(task.comment_count || 0) > 0 && (
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          <MessageSquare className="h-3 w-3" />
+                          <span className="text-xs">{task.comment_count}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {task.due_date && (() => {

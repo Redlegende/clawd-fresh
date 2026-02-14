@@ -62,10 +62,18 @@ export type FinanceEntry = {
   hours: number
   rate_nok: number
   mva_rate: number
+  business_type?: string
+  start_time?: string
+  end_time?: string
+  location?: string
   subtotal_nok: number
   total_nok: number
   invoiced: boolean
+  invoiced_at?: string
   paid: boolean
+  paid_at?: string
+  created_at: string
+  updated_at: string
 }
 
 export type Calendar = {

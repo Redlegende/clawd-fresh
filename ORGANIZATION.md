@@ -14,7 +14,9 @@
 
 ### `/projects/` — Main Projects ONLY
 
-**Rule:** Max 5-7 active projects. Archive completed ones.
+**Rule:** Keep as many active projects as you're actually working on. Archive only when truly dead/complete.
+
+**The real goal:** Prevent project sprawl (one project per domain, use sub-folders for variations).
 
 **Structure per project:**
 ```
@@ -153,15 +155,15 @@ youtube/
 
 ## 📊 Project Limits
 
-**Hard limits:**
-- Max **7 active projects** in `/projects/`
-- Max **5 sub-folders** per project
-- Max **10 files** per folder (archive old ones)
+**Guidelines (not hard limits):**
+- Keep sub-folders **organized** per project (use sub-folders for variations, not new projects)
+- Max **10 files** per folder before creating sub-folders (keeps things scannable)
+- Archive **completed/dead** projects to `archive/` when truly done
 
-**When limits hit:**
-1. Archive completed projects to `archive/`
-2. Consolidate related projects
-3. Move research to project folders
+**When things feel cluttered:**
+1. Check if "projects" are actually sub-folders of existing projects
+2. Archive completed/abandoned projects to `archive/`
+3. Ensure research lives in project folders, not scattered
 
 ---
 
@@ -173,16 +175,16 @@ youtube/
 |-----------|--------|
 | Research file created | Ensure it's in correct project folder |
 | New project idea | Check if it fits existing project first |
-| 8+ projects exist | Suggest archiving lowest priority |
 | Duplicate folders found | Merge and redirect |
 | Empty folders exist | Delete or flag |
+| Dead/abandoned projects | Move to archive/ |
 
 ### Weekly Health Check (via cron):
 ```
-1. Count projects in /projects/ (alert if >7)
-2. Check for empty folders (delete)
-3. Check for duplicate names (merge)
-4. Verify research files are in project folders
+1. Check for empty folders (delete)
+2. Check for duplicate names (merge)
+3. Verify research files are in project folders
+4. Flag abandoned projects (no activity in 30+ days)
 5. Report: "Workspace health: ✅ Clean" or "⚠️ Issues found"
 ```
 
@@ -235,7 +237,7 @@ cabin-business-ai-automation.md
 **Check before creating:**
 1. Does this belong to an existing project? → Put it there
 2. Is this general knowledge? → research/
-3. Is this a new main project? → Check if we have <7 projects first
+3. Is this a new main project? → Create it (don't force-fit into wrong project)
 4. Is this a sub-task? → Create sub-folder, not new project
 
 ---

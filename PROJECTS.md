@@ -6,22 +6,56 @@
 
 ## 🏢 BUSINESS SYSTEMS
 
+### Restaurant Staffing SaaS
+**Status:** 💡 IDEA — Needs validation & MVP planning  
+**Location:** `projects/restaurant-staffing-saas/`  
+**Idea Doc:** `projects/restaurant-staffing-saas/IDEA.md`
+
+**Concept:**
+- Automatic staff finding for restaurants/businesses
+- Scheduling system with shift matching
+- Automatic hour tracking (clock in/out)
+- Payroll integration & compliance
+- Multi-tenant SaaS (scalable per restaurant)
+
+**Key Value Props:**
+- Saves restaurant owners hours each month
+- Automatic backup of hours (compliance)
+- Easy to implement per restaurant
+- Network effects: more restaurants = better worker pool
+
+**Next:**
+- ⏳ Validate with restaurant owners
+- ⏳ Define MVP scope
+- ⏳ Create wireframes
+- ⏳ Build pilot with 1-2 restaurants
+
+---
+
 ### Kvitfjellhytter Dashboard
-**Status:** 🟢 Deployed — OAuth Ready  
-**Location:** `projects/Kvitfjellhytter/`  
+**Status:** 🟢 LIVE — Bookings Synced & Displayed  
+**Location:** `~/clawd/projects/Kvitfjellhytter/app/`  
 **Live:** https://app-pink-eight-65.vercel.app  
+**Master Doc:** `~/clawd/projects/Kvitfjellhytter/app/MASTER.md`  
 
 **Working:**
 - ✅ UI redesign (cyan theme)
 - ✅ Next.js + Supabase + Vercel
-- ✅ iGMS OAuth flow implemented
+- ✅ iGMS OAuth flow implemented and connected
 - ✅ Environment variables fixed (client_id, client_secret)
+- ✅ 30 bookings synced from iGMS to Supabase
+- ✅ bookings table recreated with correct schema
+- ✅ Bookings page displays live data with sync button
+- ✅ Sync API route updated to map iGMS data correctly
+- ✅ Guest names extracted from guest_uid
+- ✅ Properties linked to bookings
+- ✅ Deployed and live
+- ✅ MASTER.md created for AI development partner
 
 **Next:**
-- ⏳ You click "Connect iGMS" on dashboard
-- Test iGMS API with real data
-- Fix Supabase RLS policy recursion error
-- Add booking calendar view
+- ⏳ Hand off to AI partner for UI/UX redesign
+- ⏳ Clean up old test tokens (run SQL in Supabase)
+- ⏳ Rename properties to actual cabin names
 
 ---
 
@@ -141,28 +175,41 @@ python src/agent.py "Your research topic" -o report.md
 ---
 
 ### The Observatory
-**Status:** 🟢 LIVE + Evolving  
+**Status:** 🟢 LIVE — Deployed + Polished  
 **Location:** `projects/the-observatory/`  
-**Live:** https://the-observatory-1hacj9k8k-redlegendes-projects.vercel.app
+**Live:** https://the-observatory-beta.vercel.app
 
-Personal command center: Mission Control + Kanban + Fitness Lab + Research Reader + Finance + Fred Control
+Personal command center: Mission Control + Kanban + Calendar + Fitness Lab + Finance + Research + Fred Control
 
 **Modules:**
-1. **Mission Control** — Today's focus, quick stats, alerts
-2. **Kanban** — Drag-and-drop todos, project filtering
-3. **Fitness Lab** — Garmin Epix Pro sync (Body Battery, VO2 Max, HRV)
-4. **Research Reader** — Markdown viewer for notes
-5. **Finance** — Hours worked, earnings tracking
-6. **Fred Control** — Workspace file management (NEW)
+1. **Mission Control** — Today's Focus (overdue/due today/in-progress), quick stats, project health, priority tasks
+2. **Kanban** — Drag-and-drop with AI Queue column + recurring/cron tasks
+3. **Calendar** — Monthly view with Google Calendar events + task deadlines
+4. **Fitness Lab** — Garmin sync + Recharts trend charts (Body Battery, Sleep, HR, Steps)
+5. **Finance** — Workplace-separated hours (Varetaxi/Treffen/Kvitfjellhytter/Other) with Add Entry modal
+6. **Research** — 13 research notes from DB with category filters + search + project cards
+7. **Fred Control** — Workspace file management
+8. **Settings** — Google Calendar OAuth, preferences
 
 **Working:**
-- ✅ All 6 pages deployed and functional
-- ✅ Supabase connected with live data
-- ✅ 30 days Garmin data synced
+- ✅ All 8 pages deployed and functional
+- ✅ Supabase connected with live data (7 projects, no duplicates)
+- ✅ 3 Vercel cron jobs (morning-sync 7AM, task-check 12PM, recurring-tasks 6AM)
+- ✅ 13 research notes populated from workspace
+- ✅ Recharts fitness trend charts (Body Battery, Sleep, Resting HR, Steps)
+- ✅ Dynamic Today's Focus dashboard replacing static banner
 - ✅ Task sync with Fred (webhooks)
+- ✅ AI Queue column — drag tasks for Fred to handle
+- ✅ Recurring tasks support (daily/weekly/monthly) + cron processor
+- ✅ Calendar page with events + task deadlines
+- ✅ Finance workplace tabs with auto-rate calculation
 - ✅ Fred Control Panel — browse, view, manage workspace files
 
-**Tech Stack:** Next.js 16, Supabase, shadcn/ui, Recharts
+**Blocked:**
+- ⚠️ Garmin Sync — needs MFA code from Jakob
+- ⚠️ Google Calendar OAuth — needs Google Cloud credentials (client_id, client_secret)
+
+**Tech Stack:** Next.js 16, Supabase, shadcn/ui, Recharts, Vercel
 
 ---
 

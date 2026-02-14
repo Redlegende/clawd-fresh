@@ -3,6 +3,14 @@
     {
       "path": "/api/cron/morning-sync",
       "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/task-check",
+      "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/recurring-tasks",
+      "schedule": "0 6 * * *"
     }
   ]
 }

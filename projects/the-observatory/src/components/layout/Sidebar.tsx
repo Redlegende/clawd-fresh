@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
-import { LayoutDashboard, Kanban, Activity, Wallet, FileText, Menu, Settings, Cpu } from 'lucide-react'
+import { LayoutDashboard, Kanban, Activity, Wallet, FileText, Menu, Settings, Cpu, Calendar } from 'lucide-react'
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ThemeToggle'
@@ -11,6 +11,7 @@ import { ThemeToggle } from '@/components/ThemeToggle'
 const navItems = [
   { href: '/', label: 'Mission Control', icon: LayoutDashboard },
   { href: '/kanban', label: 'Kanban', icon: Kanban },
+  { href: '/calendar', label: 'Calendar', icon: Calendar },
   { href: '/fitness', label: 'Fitness Lab', icon: Activity },
   { href: '/finance', label: 'Finance', icon: Wallet },
   { href: '/research', label: 'Research', icon: FileText },
