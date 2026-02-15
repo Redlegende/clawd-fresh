@@ -44,10 +44,15 @@ Curated memories that persist across sessions. For raw daily logs, see `memory/Y
 - **Tech approach:** GIS analysis + grunneier outreach + megler network
 
 ### The Observatory (LIVE — 2026-02-03)
-- **Dashboard:** https://the-observatory-2k8lny34s-redlegendes-projects.vercel.app
+- **Dashboard:** https://the-observatory-beta.vercel.app
 - **Stack:** Next.js 16 + Supabase + Tailwind + shadcn/ui
 - **Database:** 5 tables (projects, tasks, fitness_metrics, finance_entries, research_notes)
 - **Data:** 30 days Garmin fitness data, 7 projects, 12 tasks, hour tracking
+- **Research Workflow:** ✅ Fully automated (2026-02-15)
+  - Research saved to both `.md` files AND Supabase
+  - Full markdown rendering with ReactMarkdown
+  - Searchable, categorized, tagged
+  - Skill: `skills/research-to-observatory/`
 
 ### Hybrid Browser Autonomy (NEW — 2026-02-03) 🔴 CRITICAL
 **Status:** Implementation in progress  

@@ -5,8 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { FileText, Search, Tag, Clock, FolderOpen, Activity, RefreshCw, ExternalLink } from "lucide-react"
+import { FileText, Search, Tag, Clock, FolderOpen, Activity, RefreshCw, ArrowLeft, BookOpen, ChevronRight } from "lucide-react"
 import { createClient } from '@supabase/supabase-js'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,6 +33,8 @@ interface ResearchNote {
   category?: string
   tags?: string[]
   summary?: string
+  content?: string
+  key_insights?: string[]
   status?: string
   read_count?: number
   project_id?: string
@@ -55,6 +59,7 @@ export default function ResearchPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState('All')
   const [selectedNote, setSelectedNote] = useState<ResearchNote | null>(null)
+  const [loadingContent, setLoadingContent] = useState(false)
 
   useEffect(() => { fetchData() }, [])
 
@@ -68,7 +73,7 @@ export default function ResearchPage() {
         .order('priority', { ascending: false }),
       supabase
         .from('research_notes')
-        .select('*')
+        .select('id, title, slug, file_path, category, tags, summary, key_insights, status, read_count, project_id, created_at, updated_at')
         .order('updated_at', { ascending: false })
     ])
 
@@ -77,13 +82,44 @@ export default function ResearchPage() {
     setLoading(false)
   }
 
+  async function openNote(note: ResearchNote) {
+    setLoadingContent(true)
+    setSelectedNote({ ...note, content: note.content || undefined })
+    window.scrollTo(0, 0)
+
+    // Fetch full content
+    const { data } = await supabase
+      .from('research_notes')
+      .select('content, key_insights')
+      .eq('id', note.id)
+      .single()
+
+    if (data) {
+      setSelectedNote(prev => prev ? { ...prev, content: data.content, key_insights: data.key_insights } : null)
+      // Update local cache
+      setNotes(prev => prev.map(n => n.id === note.id ? { ...n, content: data.content, key_insights: data.key_insights } : n))
+    }
+
+    setLoadingContent(false)
+
+    // Increment read count (fire and forget)
+    supabase
+      .from('research_notes')
+      .update({
+        read_count: (note.read_count || 0) + 1,
+        last_read_at: new Date().toISOString()
+      })
+      .eq('id', note.id)
+      .then(() => {})
+  }
+
   const filteredNotes = notes.filter(n => {
-    const matchesSearch = !searchQuery || 
+    const matchesSearch = !searchQuery ||
       n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       n.summary?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       n.tags?.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()))
-    
-    const matchesCategory = activeCategory === 'All' || 
+
+    const matchesCategory = activeCategory === 'All' ||
       n.category?.toLowerCase() === activeCategory.toLowerCase() ||
       n.tags?.some(t => t.toLowerCase() === activeCategory.toLowerCase())
 
@@ -98,10 +134,100 @@ export default function ResearchPage() {
     )
   }
 
+  // Full-screen reader view
+  if (selectedNote) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="sm" onClick={() => setSelectedNote(null)} className="gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Research
+          </Button>
+          {selectedNote.category && (
+            <Badge variant="outline" className="text-xs">{CATEGORY_LABELS[selectedNote.category] || selectedNote.category}</Badge>
+          )}
+        </div>
+
+        <div className="max-w-4xl">
+          <h1 className="text-2xl lg:text-3xl font-bold">{selectedNote.title}</h1>
+
+          <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+            {selectedNote.updated_at && (
+              <span className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                {new Date(selectedNote.updated_at).toLocaleDateString('no-NO', { day: 'numeric', month: 'short', year: 'numeric' })}
+              </span>
+            )}
+            {selectedNote.read_count !== undefined && (
+              <span>{selectedNote.read_count} reads</span>
+            )}
+            <span className="font-mono text-xs">{selectedNote.file_path}</span>
+          </div>
+
+          {selectedNote.tags && selectedNote.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-3">
+              {selectedNote.tags.map(tag => (
+                <Badge key={tag} variant="secondary" className="text-xs">
+                  <Tag className="h-3 w-3 mr-1" />
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          )}
+
+          {/* Key Insights */}
+          {selectedNote.key_insights && selectedNote.key_insights.length > 0 && (
+            <Card className="mt-4 border-cyan-500/20 bg-cyan-500/5">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-cyan-400">Key Insights</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-1">
+                  {selectedNote.key_insights.map((insight, i) => (
+                    <li key={i} className="text-sm flex items-start gap-2">
+                      <ChevronRight className="h-4 w-4 mt-0.5 text-cyan-400 shrink-0" />
+                      <span>{insight}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Content */}
+          {loadingContent ? (
+            <div className="flex items-center justify-center h-32 mt-6">
+              <RefreshCw className="h-5 w-5 animate-spin text-cyan-500" />
+            </div>
+          ) : selectedNote.content ? (
+            <div className="mt-6 md-content max-w-none">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedNote.content}</ReactMarkdown>
+            </div>
+          ) : selectedNote.summary ? (
+            <Card className="mt-6">
+              <CardContent className="pt-6">
+                <p className="text-sm text-muted-foreground italic">No full content available. Summary:</p>
+                <p className="text-sm mt-2">{selectedNote.summary}</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="mt-6">
+              <CardContent className="py-12 text-center text-muted-foreground">
+                <BookOpen className="h-8 w-8 mx-auto mb-3 opacity-50" />
+                <p className="text-sm">No content available for this note yet.</p>
+                <p className="text-xs mt-1">Content will appear here when research is saved to the database.</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl lg:text-3xl font-bold">📚 Research</h1>
+        <h1 className="text-2xl lg:text-3xl font-bold">Research</h1>
         <p className="text-muted-foreground mt-1 text-sm">Active projects and research knowledge base</p>
       </div>
 
@@ -123,7 +249,7 @@ export default function ResearchPage() {
                     <div className="flex items-center gap-1">
                       <Activity className="h-3 w-3 text-muted-foreground" />
                       <span className={`text-xs font-medium ${
-                        project.health_score >= 70 ? 'text-green-400' : 
+                        project.health_score >= 70 ? 'text-green-400' :
                         project.health_score >= 40 ? 'text-amber-400' : 'text-red-400'
                       }`}>{project.health_score}%</span>
                     </div>
@@ -155,7 +281,7 @@ export default function ResearchPage() {
       <div>
         <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
           <FileText className="h-5 w-5 text-purple-400" />
-          Research Notes
+          Research Notes ({filteredNotes.length})
         </h2>
 
         <div className="flex gap-4 mb-4">
@@ -186,24 +312,32 @@ export default function ResearchPage() {
         {filteredNotes.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredNotes.map(note => (
-              <Card 
-                key={note.id} 
-                className="hover:border-purple-500/30 transition-colors cursor-pointer"
-                onClick={() => setSelectedNote(selectedNote?.id === note.id ? null : note)}
+              <Card
+                key={note.id}
+                className="hover:border-purple-500/30 transition-colors cursor-pointer group"
+                onClick={() => openNote(note)}
               >
                 <CardHeader>
                   <div className="flex items-start justify-between">
-                    {note.category && <Badge variant="outline" className="text-xs">{note.category}</Badge>}
-                    {note.read_count !== undefined && note.read_count > 0 && (
-                      <div className="flex items-center text-muted-foreground text-xs">
-                        <Clock className="h-3 w-3 mr-1" />
-                        {note.read_count} reads
-                      </div>
-                    )}
+                    {note.category && <Badge variant="outline" className="text-xs">{CATEGORY_LABELS[note.category] || note.category}</Badge>}
+                    <div className="flex items-center gap-2">
+                      {note.content && (
+                        <Badge variant="secondary" className="text-xs gap-1">
+                          <BookOpen className="h-3 w-3" />
+                          Full
+                        </Badge>
+                      )}
+                      {note.read_count !== undefined && note.read_count > 0 && (
+                        <span className="flex items-center text-muted-foreground text-xs">
+                          <Clock className="h-3 w-3 mr-1" />
+                          {note.read_count}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <CardTitle className="text-base mt-2">{note.title}</CardTitle>
+                  <CardTitle className="text-base mt-2 group-hover:text-cyan-400 transition-colors">{note.title}</CardTitle>
                   {note.summary && (
-                    <CardDescription className="line-clamp-2 text-xs">{note.summary}</CardDescription>
+                    <CardDescription className="line-clamp-3 text-xs">{note.summary}</CardDescription>
                   )}
                 </CardHeader>
                 <CardContent>
@@ -218,13 +352,6 @@ export default function ResearchPage() {
                     </div>
                   )}
                   <p className="text-xs text-muted-foreground font-mono truncate">{note.file_path}</p>
-                  
-                  {selectedNote?.id === note.id && note.summary && (
-                    <div className="mt-3 p-3 rounded-lg bg-muted/50 text-sm">
-                      <p className="font-medium mb-1">Summary:</p>
-                      <p className="text-muted-foreground">{note.summary}</p>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
             ))}
@@ -236,7 +363,7 @@ export default function ResearchPage() {
                 <>
                   <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>No research notes yet</p>
-                  <p className="text-sm mt-1">Research notes will appear here when indexed from your workspace md files.</p>
+                  <p className="text-sm mt-1">Ask Fred to research a topic and it&apos;ll show up here.</p>
                 </>
               ) : (
                 <p>No notes match your search</p>
