@@ -6,7 +6,6 @@
 
 ### ARCHIVED
 
-- [ ] Connect iGMS OAuth (high) | ID: 7f5b1bad-fbff-4c88-b4be-d5e18f83c983
 - [ ] Add property images to dashboard cards (medium) | ID: d7284e8d-7c17-4713-a720-632a9007e5a1
 ### BACKLOG
 
@@ -18,8 +17,6 @@
 - [ ] Improve md file reader (medium) | ID: f224965a-4787-459f-a99d-86ebf2983455
 ### TODO
 
-- [ ] Define MVP scope and features (high) | ID: a868a60b-0211-4c34-9dcd-c9460809d6da
-- [ ] Validate Restaurant Staffing idea with restaurant owners (high) | ID: 5df4908b-2a6c-402c-9bd0-5ecfc4954521
 - [ ] Choose first video topic and create script outline (low) | ID: fca212b9-945a-43f9-ad2c-080049401498
 - [ ] Add horizontal week view to Calendar page (medium) | ID: f1a843da-d2cf-4c1a-af44-a39aa6772b77
 - [ ] Create wireframes for core flows (medium) | ID: 2441f7ed-1b41-492f-9f4a-4523601e8366
