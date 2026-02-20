@@ -214,15 +214,30 @@ function cmd_add() {
       local existing_id existing_hours
       existing_id=$(echo "$existing" | jq -r '.[0].id')
       existing_hours=$(echo "$existing" | jq '.[0].hours')
-      echo "⚠️  DUPLICATE BLOCKED" >&2
-      echo "   An entry already exists for $date / $source / $shift_type:" >&2
-      echo "   ID: $existing_id | Hours: ${existing_hours}h" >&2
-      echo "" >&2
-      echo "   Options:" >&2
-      echo "   1. Update it:  finance.sh update --date $date --source \"$source\" --shift $shift_type --hours $hours" >&2
-      echo "   2. Force add:  finance.sh add ... --force" >&2
-      echo "   3. Delete it:  finance.sh delete --id $existing_id" >&2
-      exit 1
+      echo "📝 Entry already exists for $date / $source / $shift_type (${existing_hours}h). Updating to ${hours}h..." >&2
+
+      # Auto-update the existing entry
+      local update_json="{}"
+      update_json=$(echo "$update_json" | jq --arg h "$hours" '. + {hours: ($h | tonumber)}')
+      [[ -n "$start_time" ]] && update_json=$(echo "$update_json" | jq --arg s "$start_time" '. + {start_time: $s}')
+      [[ -n "$end_time" ]] && update_json=$(echo "$update_json" | jq --arg e "$end_time" '. + {end_time: $e}')
+      [[ -n "$description" ]] && update_json=$(echo "$update_json" | jq --arg d "$description" '. + {description: $d}')
+
+      local update_result
+      update_result=$(api_update "id=eq.$existing_id" "$update_json")
+
+      if echo "$update_result" | jq -e '.[0].id' >/dev/null 2>&1; then
+        local rate subtotal total
+        rate=$(get_rate "$source" "$shift_type")
+        subtotal=$(awk "BEGIN {print $hours * $rate}")
+        total=$(awk "BEGIN {print $subtotal * $MVA_RATE}")
+        echo "✅ Updated: $date | $source | ${shift_type} | ${hours}h @ ${rate} kr/h = ${subtotal} kr (+ MVA = ${total} kr)"
+      else
+        echo "❌ Failed to update existing entry" >&2
+        echo "$update_result" >&2
+        exit 1
+      fi
+      exit 0
     fi
   fi
 

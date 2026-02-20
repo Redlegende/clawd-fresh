@@ -10,15 +10,15 @@ Track hours worked, calculate earnings with MVA, and generate invoice text for J
 
 **This is the ONLY finance skill. Do not use `finance-track` — it's deprecated.**
 
-## Duplicate Prevention
+## Smart Upsert
 
 The `add` command automatically checks for existing entries with the same **date + source + shift type**.
 
-- Same date + same source + same shift (day/night) = **BLOCKED** (update instead)
+- Same date + same source + same shift (day/night) = **AUTO-UPDATES** the existing entry
 - Same date + same source + different shift (day vs night) = **ALLOWED** (dagkjoring + kveldskjoring)
 - Same date + different source = **ALLOWED**
 
-To bypass: use `--force`. To fix an entry: use `update`.
+Use `--force` to always insert a new entry regardless. Use `update` for explicit updates.
 
 ## Quick Commands
 
